@@ -10,7 +10,7 @@ export class BlacklistedToken {
   token!: string;
 
   @Column({ type: 'timestamp' })
-  expiresAt!: Date; // The time when the token naturally expires
+  expiresAt!: Date;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;

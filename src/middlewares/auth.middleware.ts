@@ -18,7 +18,7 @@ export class AuthMiddleware implements NestMiddleware {
   async use(req: Request & { user?: any; token?: string }, res: Response, next: NextFunction) {
     let token = '';
 
-    // 1. Extract from Authorization Header
+    // Extract from Authorization Header
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.split(' ')[1];
@@ -29,10 +29,10 @@ export class AuthMiddleware implements NestMiddleware {
     }
 
     try {
-      // 3. Verify JWT token
+      // Verify JWT token
       const payload = this.jwtService.verify(token);
 
-      // 4. Check if token is blacklisted
+      // Check if token is blacklisted
       const isBlacklisted = await this.blacklistedTokenRepository.findOne({
         where: { token },
       });
@@ -40,7 +40,7 @@ export class AuthMiddleware implements NestMiddleware {
         throw new UnauthorizedException('Token is revoked (logged out)');
       }
 
-      // 5. Fetch user from DB
+      // Fetch user from DB
       const user = await this.usersService.findByEmail(payload.email);
       if (!user) {
         throw new UnauthorizedException('User no longer exists');

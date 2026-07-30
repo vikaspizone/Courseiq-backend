@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { UserRole } from '../utils/enums';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Role } from './role.schema';
 
 @Entity('users')
 export class User {
@@ -12,15 +12,15 @@ export class User {
   @Column()
   password!: string;
 
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    default: UserRole.STUDENT,
-  })
-  role!: UserRole;
+  @ManyToOne(() => Role, { eager: true, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'roleId' })
+  role!: Role;
+
+  @Column()
+  roleId!: string;
 
   @Column({ nullable: true })
-  refreshToken?: string; // Hashed refresh token
+  refreshToken?: string;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;

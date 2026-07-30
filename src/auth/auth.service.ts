@@ -8,6 +8,7 @@ import { UsersService } from '../users/users.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { BlacklistedToken } from '../databaseSchema/blacklisted-token.schema';
+import { trans } from '../utils/trans';
 
 @Injectable()
 export class AuthService {
@@ -23,24 +24,20 @@ export class AuthService {
   async signup(signupDto: SignupDto) {
     const { email, password, role } = signupDto;
 
-    // Check if user already exists
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser) {
-      throw new ConflictException('Email is already registered');
+      throw new ConflictException(trans('auth.email_registered'));
     }
 
-    // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Save user to database with role
     const user = await this.usersService.create(email, hashedPassword, role);
 
-    // Generate JWT Access & Refresh tokens
     const tokens = await this.generateTokens(user.id, user.email);
 
     return {
-      message: 'User registered successfully',
+      message: trans('auth.user_registered'),
       user: {
         id: user.id,
         email: user.email,
@@ -54,23 +51,20 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
-    // Find user by email
     const user = await this.usersService.findByEmail(email);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(trans('auth.user_not_found'));
     }
 
-    // Compare passwords
     const isPasswordValid = await bcrypt.compare(password, user.password || '');
     if (!isPasswordValid) {
-      throw new BadRequestException('Invalid password');
+      throw new BadRequestException(trans('auth.invalid_password'));
     }
 
-    // Generate JWT Access & Refresh tokens
     const tokens = await this.generateTokens(user.id, user.email);
 
     return {
-      message: 'Login successful',
+      message: trans('auth.login_successful'),
       user: {
         id: user.id,
         email: user.email,
@@ -87,32 +81,28 @@ export class AuthService {
       const user = await this.usersService.findByEmail(payload.email);
 
       if (!user || !user.refreshToken) {
-        throw new UnauthorizedException('Invalid or expired refresh token');
+        throw new UnauthorizedException(trans('auth.refresh_token_invalid'));
       }
 
-      // Match refresh token with the stored hashed version
       const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
       if (!isMatch) {
-        throw new UnauthorizedException('Invalid or expired refresh token');
+        throw new UnauthorizedException(trans('auth.refresh_token_invalid'));
       }
 
-      // Generate new tokens
       const tokens = await this.generateTokens(user.id, user.email);
       return {
-        message: 'Tokens refreshed successfully',
+        message: trans('auth.tokens_refreshed'),
         ...tokens,
       };
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      throw new UnauthorizedException(trans('auth.refresh_token_invalid'));
     }
   }
 
   // User Logout
   async logout(userId: string, accessToken: string) {
-    // 1. Revoke/clear refresh token in database
     await this.usersService.updateRefreshToken(userId, null);
 
-    // 2. Add current access token to the blacklist
     try {
       const decoded = this.jwtService.decode(accessToken) as any;
       const expiresAt = decoded && decoded.exp
@@ -125,7 +115,6 @@ export class AuthService {
       });
       await this.blacklistedTokenRepository.save(blacklisted);
     } catch (err) {
-      // If token decoding fails, still log out by saving fallback expiration
       const blacklisted = this.blacklistedTokenRepository.create({
         token: accessToken,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -134,7 +123,7 @@ export class AuthService {
     }
 
     return {
-      message: 'Logged out successfully.',
+      message: trans('auth.logged_out'),
     };
   }
 
@@ -142,13 +131,12 @@ export class AuthService {
   private async generateTokens(userId: string, email: string) {
     const payload = { sub: userId, email };
 
-    const accessExpiry = this.configService.get<string>('JWT_ACCESS_EXPIRES_IN');
-    const refreshExpiry = this.configService.get<string>('JWT_REFRESH_EXPIRES_IN');
+    const accessExpiry = this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '1d';
+    const refreshExpiry = this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
 
     const accessToken = this.jwtService.sign(payload, { expiresIn: accessExpiry as any });
     const refreshToken = this.jwtService.sign(payload, { expiresIn: refreshExpiry as any });
 
-    // Hash refresh token and save to DB
     const salt = await bcrypt.genSalt(10);
     const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
     await this.usersService.updateRefreshToken(userId, hashedRefreshToken);

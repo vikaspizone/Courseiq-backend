@@ -1,0 +1,25 @@
+export default {
+  auth: {
+    email: 'कृपया एक मान्य ईमेल पता दर्ज करें।',
+    email_required: 'ईमेल आवश्यक है।',
+    password_required: 'पासवर्ड आवश्यक है।',
+    password_min: 'पासवर्ड कम से कम :min अक्षर का होना चाहिए।',
+    role_enum: 'भूमिका ADMIN, INSTRUCTOR, या STUDENT होनी चाहिए।',
+    refresh_token_required: 'रिफ्रेश टोकन आवश्यक है।',
+    swagger_email_desc: 'उपयोगकर्ता का ईमेल पता',
+    swagger_password_desc: 'उपयोगकर्ता का पासवर्ड (न्यूनतम 6 अक्षर)',
+    swagger_password_login_desc: 'उपयोगकर्ता का पासवर्ड',
+    swagger_role_desc: 'उपयोगकर्ता की भूमिका (प्रशासक, अभियंता या छात्र)',
+    swagger_refresh_token_desc: 'नया एक्सेस टोकन प्राप्त करने के लिए रिफ्रेश टोकन',
+    // Service response & error messages
+    email_registered: 'यह ईमेल पहले से ही पंजीकृत है',
+    user_registered: 'उपयोगकर्ता सफलतापूर्वक पंजीकृत हो गया',
+    user_not_found: 'उपयोगकर्ता नहीं मिला',
+    invalid_password: 'गलत पासवर्ड',
+    login_successful: 'लॉगिन सफल रहा',
+    refresh_token_invalid: 'अमान्य या समाप्त हो चुका रिफ्रेश टोकन',
+    tokens_refreshed: 'टोकन सफलतापूर्वक नवीनीकृत कर दिए गए हैं',
+    logged_out: 'सफलतापूर्वक लॉग आउट हो गया।',
+  },
+  user: {},
+};

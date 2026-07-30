@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import databaseConfig from './config/database.config';
 import { AuthMiddleware } from './middlewares/auth.middleware';
+import { LocaleMiddleware } from './middlewares/locale.middleware';
 import { BlacklistedToken } from './databaseSchema/blacklisted-token.schema';
 
 @Module({
@@ -15,6 +16,7 @@ import { BlacklistedToken } from './databaseSchema/blacklisted-token.schema';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig],
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
     // Configure TypeORM asynchronously to load database configuration from ConfigService
     TypeOrmModule.forRootAsync({
@@ -32,6 +34,8 @@ import { BlacklistedToken } from './databaseSchema/blacklisted-token.schema';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
+      .apply(LocaleMiddleware)
+      .forRoutes('*')
       .apply(AuthMiddleware)
       .exclude(
         { path: 'auth/signup', method: RequestMethod.POST },

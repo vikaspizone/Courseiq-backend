@@ -1,0 +1,25 @@
+export default {
+  auth: {
+    email: 'Please enter a valid email address.',
+    email_required: 'Email is required.',
+    password_required: 'Password is required.',
+    password_min: 'Password must be at least :min characters long.',
+    role_enum: 'Role must be ADMIN, INSTRUCTOR, or STUDENT.',
+    refresh_token_required: 'Refresh token is required.',
+    swagger_email_desc: 'Email address of the user',
+    swagger_password_desc: 'Password of the user (min 6 characters)',
+    swagger_password_login_desc: 'Password of the user',
+    swagger_role_desc: 'Role of the user (admin, instructor, or student)',
+    swagger_refresh_token_desc: 'Refresh token to obtain a new access token',
+    // Service response & error messages
+    email_registered: 'Email is already registered',
+    user_registered: 'User registered successfully',
+    user_not_found: 'User not found',
+    invalid_password: 'Invalid password',
+    login_successful: 'Login successful',
+    refresh_token_invalid: 'Invalid or expired refresh token',
+    tokens_refreshed: 'Tokens refreshed successfully',
+    logged_out: 'Logged out successfully.',
+  },
+  user: {},
+};

@@ -1,25 +1,41 @@
 import * as dotenv from 'dotenv';
+import * as path from 'path';
+
 // Load environment variables before any other imports
-dotenv.config();
+const env = process.env.NODE_ENV || 'development';
+dotenv.config({ path: path.resolve(process.cwd(), `.env.${env}`) });
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { ensureDatabaseExists } from './config/ensure-db';
+import { AllExceptionsFilter } from './middlewares/http-exception.filter';
+import { runDatabaseMigrations } from './utils/migrations-runner';
+import { setupSwagger } from './config/swagger.config';
+import { logErrorToFile } from './utils/logger';
 
 async function bootstrap() {
   // Ensure that target PostgreSQL database exists or create it
   await ensureDatabaseExists();
 
   const app = await NestFactory.create(AppModule);
+
+  // Run programmatic database migrations
+  await runDatabaseMigrations(app);
+
+  // Register global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter());
+  
+  // Setup Swagger
+  setupSwagger(app);
   
   // Enable global validation pipe with custom error formatter
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // strip properties that do not have decorators
-      forbidNonWhitelisted: true, // throw errors when non-whitelisted properties are present
-      transform: true, // transform payloads to be objects typed according to their DTO classes
-      stopAtFirstError: true, // Stops checking validation rules after the first failure on a field
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      stopAtFirstError: true,
       exceptionFactory: (errors) => {
         const firstError = errors[0];
         if (firstError && firstError.constraints) {
@@ -41,5 +57,9 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('[Bootstrap] Application failed to start:', error);
+  logErrorToFile({ error, context: 'Bootstrap' });
+  process.exit(1);
+});
 
