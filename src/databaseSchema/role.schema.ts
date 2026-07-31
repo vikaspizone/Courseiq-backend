@@ -8,6 +8,9 @@ export class Role {
   @Column({ unique: true })
   name!: string;
 
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive!: boolean;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 

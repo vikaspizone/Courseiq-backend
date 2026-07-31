@@ -4,6 +4,7 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { handlePromise } from '../utils/async-handler';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -14,21 +15,27 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({})
   async signup(@Body() signupDto: SignupDto) {
-    return this.authService.signup(signupDto);
+    const [result, error] = await handlePromise(this.authService.signup(signupDto));
+    if (error) throw error;
+    return result;
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({})
   async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+    const [result, error] = await handlePromise(this.authService.login(loginDto));
+    if (error) throw error;
+    return result;
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({})
   async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refresh(refreshTokenDto.refreshToken);
+    const [result, error] = await handlePromise(this.authService.refresh(refreshTokenDto.refreshToken));
+    if (error) throw error;
+    return result;
   }
 
   @Post('logout')
@@ -38,7 +45,9 @@ export class AuthController {
   async logout(@Request() req) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
-    return this.authService.logout(req.user.id, token);
+    const [result, error] = await handlePromise(this.authService.logout(req.user.id, token));
+    if (error) throw error;
+    return result;
   }
 
   // Example of a route protected with JWT guard

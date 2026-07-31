@@ -31,7 +31,7 @@ export function setupSwagger(app: INestApplication): void {
         description: 'Enter JWT token',
         in: 'header',
       },
-      'JWT-auth', // Security name for @ApiBearerAuth('JWT-auth') decorator
+      'JWT-auth',
     )
     .addGlobalParameters({
       name: 'Accept-Language',

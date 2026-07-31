@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { RolesModule } from './roles/roles.module';
+import { CourseCategoriesModule } from './course-categories/course-categories.module';
 import databaseConfig from './config/database.config';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { LocaleMiddleware } from './middlewares/locale.middleware';
@@ -24,9 +26,11 @@ import { BlacklistedToken } from './databaseSchema/blacklisted-token.schema';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => configService.get('database')!,
     }),
-    TypeOrmModule.forFeature([BlacklistedToken]), // Register here for middleware injection
+    TypeOrmModule.forFeature([BlacklistedToken]),
     UsersModule,
     AuthModule,
+    RolesModule,
+    CourseCategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

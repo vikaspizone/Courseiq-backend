@@ -34,7 +34,7 @@ export class AuthService {
 
     const user = await this.usersService.create(email, hashedPassword, role);
 
-    const tokens = await this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email, user.role?.name || '');
 
     return {
       message: trans('auth.user_registered'),
@@ -61,7 +61,7 @@ export class AuthService {
       throw new BadRequestException(trans('auth.invalid_password'));
     }
 
-    const tokens = await this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email, user.role?.name || '');
 
     return {
       message: trans('auth.login_successful'),
@@ -89,7 +89,7 @@ export class AuthService {
         throw new UnauthorizedException(trans('auth.refresh_token_invalid'));
       }
 
-      const tokens = await this.generateTokens(user.id, user.email);
+      const tokens = await this.generateTokens(user.id, user.email, user.role?.name || '');
       return {
         message: trans('auth.tokens_refreshed'),
         ...tokens,
@@ -128,8 +128,12 @@ export class AuthService {
   }
 
   // Helper function to sign Access and Refresh tokens
-  private async generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
+  private async generateTokens(userId: string, email: string, roleName: string) {
+    const payload = {
+      user_id: userId,
+      email,
+      role: roleName,
+    };
 
     const accessExpiry = this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '1d';
     const refreshExpiry = this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';

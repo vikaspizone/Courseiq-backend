@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { BlacklistedToken } from '../databaseSchema/blacklisted-token.schema';
+import { trans } from '../utils/trans';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
@@ -25,7 +26,7 @@ export class AuthMiddleware implements NestMiddleware {
     }
 
     if (!token) {
-      throw new UnauthorizedException('Authentication token is required inside Authorization Header');
+      throw new UnauthorizedException(trans('auth.token_required'));
     }
 
     try {
@@ -37,13 +38,13 @@ export class AuthMiddleware implements NestMiddleware {
         where: { token },
       });
       if (isBlacklisted) {
-        throw new UnauthorizedException('Token is revoked (logged out)');
+        throw new UnauthorizedException(trans('auth.token_revoked'));
       }
 
       // Fetch user from DB
       const user = await this.usersService.findByEmail(payload.email);
       if (!user) {
-        throw new UnauthorizedException('User no longer exists');
+        throw new UnauthorizedException(trans('auth.user_not_exist'));
       }
 
       // Attach user and token to request
@@ -52,7 +53,10 @@ export class AuthMiddleware implements NestMiddleware {
 
       next();
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired token');
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException(trans('auth.token_invalid'));
     }
   }
 }
