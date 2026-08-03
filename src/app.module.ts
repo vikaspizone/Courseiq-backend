@@ -7,6 +7,9 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
 import { CourseCategoriesModule } from './course-categories/course-categories.module';
+import { ModulesModule } from './modules/modules.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { RolePermissionsModule } from './role-permissions/role-permissions.module';
 import databaseConfig from './config/database.config';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { LocaleMiddleware } from './middlewares/locale.middleware';
@@ -31,6 +34,9 @@ import { BlacklistedToken } from './databaseSchema/blacklisted-token.schema';
     AuthModule,
     RolesModule,
     CourseCategoriesModule,
+    ModulesModule,
+    PermissionsModule,
+    RolePermissionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

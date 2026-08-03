@@ -93,7 +93,7 @@ export class RolesService {
 
     // Check if the role is assigned to any user
     const usersCount = await this.userRepository.count({
-      where: { roleId: id },
+      where: { role_id: id },
     });
 
     if (usersCount > 0) {

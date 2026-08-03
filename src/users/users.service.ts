@@ -68,7 +68,7 @@ export class UsersService {
 
     // Verify role exists
     const role = await this.roleRepository.findOne({
-      where: { id: createUserDto.roleId },
+      where: { id: createUserDto.role_id },
     });
     if (!role) {
       throw new NotFoundException(trans('user.role_not_found'));
@@ -84,7 +84,7 @@ export class UsersService {
       password: hashedPassword,
       phone: createUserDto.phone,
       gender: createUserDto.gender,
-      profileImage: createUserDto.profileImage,
+      profile_image: createUserDto.profile_image,
       about: createUserDto.about,
       dateOfBirth: createUserDto.dateOfBirth ? new Date(createUserDto.dateOfBirth) : undefined,
       isActive: createUserDto.isActive !== undefined ? createUserDto.isActive : true,
@@ -93,7 +93,7 @@ export class UsersService {
       languages: createUserDto.languages,
       address: createUserDto.address,
       work: createUserDto.work,
-      roleId: createUserDto.roleId,
+      role_id: createUserDto.role_id,
       createdBy: currentUserId,
     });
 
@@ -155,27 +155,21 @@ export class UsersService {
     }
 
     // Role check
-    if (updateUserDto.roleId) {
+    if (updateUserDto.role_id) {
       const role = await this.roleRepository.findOne({
-        where: { id: updateUserDto.roleId },
+        where: { id: updateUserDto.role_id },
       });
       if (!role) {
         throw new NotFoundException(trans('user.role_not_found'));
       }
-      user.roleId = updateUserDto.roleId;
-    }
-
-    // Password hashing if updated
-    if (updateUserDto.password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(updateUserDto.password, salt);
+      user.role_id = updateUserDto.role_id;
     }
 
     // Map other optional properties
     if (updateUserDto.name) user.name = updateUserDto.name;
     if (updateUserDto.phone !== undefined) user.phone = updateUserDto.phone;
     if (updateUserDto.gender !== undefined) user.gender = updateUserDto.gender;
-    if (updateUserDto.profileImage !== undefined) user.profileImage = updateUserDto.profileImage;
+    if (updateUserDto.profile_image !== undefined) user.profile_image = updateUserDto.profile_image;
     if (updateUserDto.about !== undefined) user.about = updateUserDto.about;
     if (updateUserDto.dateOfBirth !== undefined) {
       user.dateOfBirth = updateUserDto.dateOfBirth ? new Date(updateUserDto.dateOfBirth) : undefined;

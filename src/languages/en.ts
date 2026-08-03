@@ -77,4 +77,33 @@ export default {
     swagger_parent_desc: 'UUID of the parent category',
     swagger_translations_desc: 'List of translation objects for the category',
   },
+  module: {
+    not_found: 'Module not found.',
+    already_exists: 'Module with name :name already exists.',
+    created: 'Module created successfully.',
+    updated: 'Module updated successfully.',
+    deleted: 'Module deleted successfully.',
+    lang_not_found: 'Language code :code not found.',
+  },
+  permission: {
+    not_found: 'Permission not found.',
+    already_exists: 'Permission with name :name already exists.',
+    created: 'Permission created successfully.',
+    updated: 'Permission updated successfully.',
+    deleted: 'Permission deleted successfully.',
+    lang_not_found: 'Language code :code not found.',
+  },
+  role_permission: {
+    role_not_found: 'Role not found.',
+    module_not_found: 'Module not found.',
+    already_exists: 'Role permission mapping for this Role and Module already exists.',
+    invalid_permissions: 'One or more permission IDs are invalid or inactive.',
+    created: 'Role permissions assigned successfully.',
+    updated: 'Role permissions updated successfully.',
+    deleted: 'Role permissions assignment deleted successfully.',
+    not_found: 'Role permission mapping not found.',
+  },
+  common: {
+    success: 'Success',
+  },
 };

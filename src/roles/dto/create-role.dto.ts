@@ -5,7 +5,6 @@ import { trans } from '../../utils/trans';
 export class CreateRoleDto {
   @ApiProperty({
     description: trans('role.swagger_name_desc'),
-    example: 'manager',
   })
   @IsString({ message: () => trans('role.name_string') })
   @IsNotEmpty({ message: () => trans('role.name_required') })
@@ -13,7 +12,6 @@ export class CreateRoleDto {
 
   @ApiProperty({
     description: 'Active status of the role',
-    example: true,
     required: false,
     default: true,
   })

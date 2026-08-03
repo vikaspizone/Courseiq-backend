@@ -10,6 +10,7 @@ import { Request, Response } from 'express';
 import { mailConfig } from '../config/mail.config';
 import { sendEmail } from '../utils/send-email';
 import { logErrorToFile } from '../utils/logger';
+import { trans } from '../utils/trans';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -43,7 +44,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const errorResponse = {
       success: false,
       statusCode: status,
-      message,
+      message: trans(message),
       errors,
       data: null,
       timestamp: new Date().toISOString(),

@@ -19,7 +19,7 @@ export class User {
   gender?: string;
 
   @Column({ name: 'profile_image', type: 'varchar', length: 500, nullable: true })
-  profileImage?: string;
+  profile_image?: string;
 
   @Column()
   password!: string;
@@ -55,11 +55,11 @@ export class User {
   updatedBy?: string;
 
   @ManyToOne(() => Role, { eager: true, onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'roleId' })
+  @JoinColumn({ name: 'role_id' })
   role!: Role;
 
-  @Column()
-  roleId!: string;
+  @Column({ name: 'role_id', type: 'uuid' })
+  role_id!: string;
 
   @Column({ nullable: true })
   refreshToken?: string;

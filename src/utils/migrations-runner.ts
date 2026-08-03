@@ -75,7 +75,7 @@ async function seedDefaultRolesAndLanguages(dataSource: DataSource) {
           const passwordHash = await bcrypt.hash('Admin@123', 10);
           logger.log(`Seeding default admin user: ${adminEmail}`);
           await queryRunner.query(
-            `INSERT INTO "users" ("id", "email", "password", "roleId", "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, now(), now())`,
+            `INSERT INTO "users" ("id", "email", "password", "role_id", "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, now(), now())`,
             [crypto.randomUUID(), adminEmail, passwordHash, roleId],
           );
         } else {

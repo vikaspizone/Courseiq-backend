@@ -10,6 +10,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { ensureDatabaseExists } from './config/ensure-db';
 import { AllExceptionsFilter } from './middlewares/http-exception.filter';
+import { TransformInterceptor } from './middlewares/transform.interceptor';
 import { runDatabaseMigrations } from './utils/migrations-runner';
 import { setupSwagger } from './config/swagger.config';
 import { logErrorToFile } from './utils/logger';
@@ -22,6 +23,9 @@ async function bootstrap() {
 
   // Run programmatic database migrations
   await runDatabaseMigrations(app);
+
+  // Register global interceptor for responses
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   // Register global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
