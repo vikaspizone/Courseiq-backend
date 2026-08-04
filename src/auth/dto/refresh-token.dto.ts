@@ -8,5 +8,5 @@ export class RefreshTokenDto {
   })
   @IsString()
   @IsNotEmpty({ message: () => trans('auth.refresh_token_required') })
-  refreshToken!: string;
+  refresh_token!: string;
 }

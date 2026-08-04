@@ -26,7 +26,7 @@ export class UsersService {
   }
 
   // Create a new user with role (Used in signup)
-  async create(email: string, passwordHash: string, roleName?: UserRole): Promise<User> {
+  async create(name: string, email: string, passwordHash: string, roleName?: UserRole): Promise<User> {
     const targetRoleName = roleName || UserRole.STUDENT;
     
     // Find the role from DB
@@ -39,7 +39,7 @@ export class UsersService {
     }
 
     const newUser = this.userRepository.create({
-      name: email.split('@')[0], // Default name from email
+      name: name.trim(),
       email: email.toLowerCase().trim(),
       password: passwordHash,
       role: role,
@@ -49,7 +49,7 @@ export class UsersService {
 
   // Update hashed refresh token for revocation
   async updateRefreshToken(userId: string, refreshTokenHash: string | null): Promise<void> {
-    await this.userRepository.update(userId, { refreshToken: refreshTokenHash || undefined });
+    await this.userRepository.update(userId, { refresh_token: refreshTokenHash || undefined });
   }
 
   // ==========================================
@@ -86,21 +86,21 @@ export class UsersService {
       gender: createUserDto.gender,
       profile_image: createUserDto.profile_image,
       about: createUserDto.about,
-      dateOfBirth: createUserDto.dateOfBirth ? new Date(createUserDto.dateOfBirth) : undefined,
-      isActive: createUserDto.isActive !== undefined ? createUserDto.isActive : true,
+      date_of_birth: createUserDto.date_of_birth ? new Date(createUserDto.date_of_birth) : undefined,
+      is_active: createUserDto.is_active !== undefined ? createUserDto.is_active : true,
       qualification: createUserDto.qualification,
       experience: createUserDto.experience,
       languages: createUserDto.languages,
       address: createUserDto.address,
       work: createUserDto.work,
       role_id: createUserDto.role_id,
-      createdBy: currentUserId,
+      created_by: currentUserId,
     });
 
     const savedUser = await this.userRepository.save(newUser);
 
     // Return user without password
-    const { password, refreshToken, ...userWithoutPassword } = savedUser;
+    const { password, refresh_token, ...userWithoutPassword } = savedUser;
     return userWithoutPassword;
   }
 
@@ -112,7 +112,7 @@ export class UsersService {
       },
     });
 
-    return users.map(({ password, refreshToken, ...userWithoutPassword }) => userWithoutPassword);
+    return users.map(({ password, refresh_token, ...userWithoutPassword }) => userWithoutPassword);
   }
 
   // Find user by ID
@@ -128,7 +128,7 @@ export class UsersService {
       throw new NotFoundException(trans('user.not_found'));
     }
 
-    const { password, refreshToken, ...userWithoutPassword } = user;
+    const { password, refresh_token, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
 
@@ -171,10 +171,10 @@ export class UsersService {
     if (updateUserDto.gender !== undefined) user.gender = updateUserDto.gender;
     if (updateUserDto.profile_image !== undefined) user.profile_image = updateUserDto.profile_image;
     if (updateUserDto.about !== undefined) user.about = updateUserDto.about;
-    if (updateUserDto.dateOfBirth !== undefined) {
-      user.dateOfBirth = updateUserDto.dateOfBirth ? new Date(updateUserDto.dateOfBirth) : undefined;
+    if (updateUserDto.date_of_birth !== undefined) {
+      user.date_of_birth = updateUserDto.date_of_birth ? new Date(updateUserDto.date_of_birth) : undefined;
     }
-    if (updateUserDto.isActive !== undefined) user.isActive = updateUserDto.isActive;
+    if (updateUserDto.is_active !== undefined) user.is_active = updateUserDto.is_active;
     if (updateUserDto.qualification !== undefined) user.qualification = updateUserDto.qualification;
     if (updateUserDto.experience !== undefined) user.experience = updateUserDto.experience;
     if (updateUserDto.languages !== undefined) user.languages = updateUserDto.languages;
@@ -182,7 +182,7 @@ export class UsersService {
     if (updateUserDto.work !== undefined) user.work = updateUserDto.work;
 
     // Track updater
-    user.updatedBy = currentUserId;
+    user.updated_by = currentUserId;
 
     const updatedUser = await this.userRepository.save(user);
 

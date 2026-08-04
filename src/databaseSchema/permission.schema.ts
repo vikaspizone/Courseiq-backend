@@ -7,14 +7,14 @@ export class PermissionEntity {
   id!: string;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  isActive!: boolean;
+  is_active!: boolean;
 
   @OneToMany(() => PermissionTranslation, (translation) => translation.permission, { cascade: true })
   translations!: PermissionTranslation[];
 
-  @CreateDateColumn({ type: 'timestamp' })
-  createdAt!: Date;
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  created_at!: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt!: Date;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  updated_at!: Date;
 }

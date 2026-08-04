@@ -23,7 +23,7 @@ export class RolePermissionsService {
   ) {}
 
   async create(createRolePermissionDto: CreateRolePermissionDto): Promise<{ message: string; data: RolePermissionEntity }> {
-    const { role_id, moduleId, permissionIds } = createRolePermissionDto;
+    const { role_id, module_id, permission_ids } = createRolePermissionDto;
 
     // Check if role exists
     const roleExists = await this.roleRepository.findOne({ where: { id: role_id } });
@@ -32,33 +32,33 @@ export class RolePermissionsService {
     }
 
     // Check if module exists
-    const moduleExists = await this.moduleRepository.findOne({ where: { id: moduleId } });
+    const moduleExists = await this.moduleRepository.findOne({ where: { id: module_id } });
     if (!moduleExists) {
       throw new NotFoundException(trans('role_permission.module_not_found'));
     }
 
     // Check if relationship already exists
     const existing = await this.rolePermissionRepository.findOne({
-      where: { role_id, moduleId },
+      where: { role_id, module_id },
     });
     if (existing) {
       throw new ConflictException(trans('role_permission.already_exists'));
     }
 
-    // Validate permissionIds
-    if (permissionIds && permissionIds.length > 0) {
+    // Validate permission_ids
+    if (permission_ids && permission_ids.length > 0) {
       const dbPermissions = await this.permissionRepository.find({
-        where: { id: In(permissionIds) },
+        where: { id: In(permission_ids) },
       });
-      if (dbPermissions.length !== permissionIds.length) {
+      if (dbPermissions.length !== permission_ids.length) {
         throw new BadRequestException(trans('role_permission.invalid_permissions'));
       }
     }
 
     const newMapping = this.rolePermissionRepository.create({
       role_id,
-      moduleId,
-      permissionIds,
+      module_id,
+      permission_ids,
     });
 
     const saved = await this.rolePermissionRepository.save(newMapping);
@@ -73,7 +73,7 @@ export class RolePermissionsService {
     const queryBuilder = this.rolePermissionRepository.createQueryBuilder('rolePermission')
       .leftJoinAndSelect('rolePermission.role', 'role')
       .leftJoinAndSelect('rolePermission.module', 'module')
-      .orderBy('rolePermission.createdAt', 'DESC');
+      .orderBy('rolePermission.created_at', 'DESC');
 
     if (role_id) {
       queryBuilder.andWhere('rolePermission.role_id = :role_id', { role_id });
@@ -95,7 +95,7 @@ export class RolePermissionsService {
 
   async update(id: string, updateRolePermissionDto: UpdateRolePermissionDto): Promise<{ message: string; data: RolePermissionEntity }> {
     const mapping = await this.findOne(id);
-    const { role_id, moduleId, permissionIds } = updateRolePermissionDto;
+    const { role_id, module_id, permission_ids } = updateRolePermissionDto;
 
     if (role_id && role_id !== mapping.role_id) {
       const roleExists = await this.roleRepository.findOne({ where: { id: role_id } });
@@ -105,34 +105,34 @@ export class RolePermissionsService {
       mapping.role_id = role_id;
     }
 
-    if (moduleId && moduleId !== mapping.moduleId) {
-      const moduleExists = await this.moduleRepository.findOne({ where: { id: moduleId } });
+    if (module_id && module_id !== mapping.module_id) {
+      const moduleExists = await this.moduleRepository.findOne({ where: { id: module_id } });
       if (!moduleExists) {
         throw new NotFoundException(trans('role_permission.module_not_found'));
       }
-      mapping.moduleId = moduleId;
+      mapping.module_id = module_id;
     }
 
     // If changing role/module check conflict
-    if ((role_id && role_id !== mapping.role_id) || (moduleId && moduleId !== mapping.moduleId)) {
+    if ((role_id && role_id !== mapping.role_id) || (module_id && module_id !== mapping.module_id)) {
       const conflictCheck = await this.rolePermissionRepository.findOne({
-        where: { role_id: mapping.role_id, moduleId: mapping.moduleId },
+        where: { role_id: mapping.role_id, module_id: mapping.module_id },
       });
       if (conflictCheck && conflictCheck.id !== id) {
         throw new ConflictException(trans('role_permission.already_exists'));
       }
     }
 
-    if (permissionIds) {
-      if (permissionIds.length > 0) {
+    if (permission_ids) {
+      if (permission_ids.length > 0) {
         const dbPermissions = await this.permissionRepository.find({
-          where: { id: In(permissionIds) },
+          where: { id: In(permission_ids) },
         });
-        if (dbPermissions.length !== permissionIds.length) {
+        if (dbPermissions.length !== permission_ids.length) {
           throw new BadRequestException(trans('role_permission.invalid_permissions'));
         }
       }
-      mapping.permissionIds = permissionIds;
+      mapping.permission_ids = permission_ids;
     }
 
     const updated = await this.rolePermissionRepository.save(mapping);

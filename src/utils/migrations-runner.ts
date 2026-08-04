@@ -26,7 +26,7 @@ async function seedDefaultRolesAndLanguages(dataSource: DataSource) {
         if (roleExists.length === 0) {
           logger.log(`Seeding default role: ${roleName}`);
           await queryRunner.query(
-            `INSERT INTO "roles" ("id", "name", "createdAt", "updatedAt") VALUES ($1, $2, now(), now())`,
+            `INSERT INTO "roles" ("id", "name", "created_at", "updated_at") VALUES ($1, $2, now(), now())`,
             [crypto.randomUUID(), roleName],
           );
         }
@@ -48,7 +48,7 @@ async function seedDefaultRolesAndLanguages(dataSource: DataSource) {
         if (langExists.length === 0) {
           logger.log(`Seeding default language: ${lang.name} (${lang.code})`);
           await queryRunner.query(
-            `INSERT INTO "languages" ("id", "name", "code", "createdAt", "updatedAt") VALUES ($1, $2, $3, now(), now())`,
+            `INSERT INTO "languages" ("id", "name", "code", "created_at", "updated_at") VALUES ($1, $2, $3, now(), now())`,
             [crypto.randomUUID(), lang.name, lang.code],
           );
         }
@@ -75,7 +75,7 @@ async function seedDefaultRolesAndLanguages(dataSource: DataSource) {
           const passwordHash = await bcrypt.hash('Admin@123', 10);
           logger.log(`Seeding default admin user: ${adminEmail}`);
           await queryRunner.query(
-            `INSERT INTO "users" ("id", "email", "password", "role_id", "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, now(), now())`,
+            `INSERT INTO "users" ("id", "email", "password", "role_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, now(), now())`,
             [crypto.randomUUID(), adminEmail, passwordHash, roleId],
           );
         } else {

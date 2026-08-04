@@ -8,14 +8,14 @@ export class PermissionTranslation {
   id!: string;
 
   @Column({ name: 'permission_id', type: 'uuid' })
-  permissionId!: string;
+  permission_id!: string;
 
   @ManyToOne(() => PermissionEntity, (perm) => perm.translations, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'permission_id' })
   permission!: PermissionEntity;
 
   @Column({ name: 'language_id', type: 'uuid' })
-  languageId!: string;
+  language_id!: string;
 
   @ManyToOne(() => Language, { onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'language_id' })
@@ -25,8 +25,8 @@ export class PermissionTranslation {
   name!: string;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
-  createdAt!: Date;
+  created_at!: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
-  updatedAt!: Date;
+  updated_at!: Date;
 }

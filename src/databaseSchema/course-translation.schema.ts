@@ -1,18 +1,18 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { ModuleEntity } from './module.schema';
+import { Course } from './course.schema';
 import { Language } from './language.schema';
 
-@Entity('module_translations')
-export class ModuleTranslation {
+@Entity('course_translations')
+export class CourseTranslation {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'module_id', type: 'uuid' })
-  module_id!: string;
+  @Column({ name: 'course_id', type: 'uuid' })
+  course_id!: string;
 
-  @ManyToOne(() => ModuleEntity, (mod) => mod.translations, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'module_id' })
-  module!: ModuleEntity;
+  @ManyToOne(() => Course, (course) => course.translations, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'course_id' })
+  course!: Course;
 
   @Column({ name: 'language_id', type: 'uuid' })
   language_id!: string;
@@ -21,8 +21,14 @@ export class ModuleTranslation {
   @JoinColumn({ name: 'language_id' })
   language!: Language;
 
-  @Column({ unique: true })
-  name!: string;
+  @Column()
+  title!: string;
+
+  @Column({ type: 'text', nullable: true })
+  description!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  overview!: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   created_at!: Date;

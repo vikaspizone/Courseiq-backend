@@ -22,9 +22,9 @@ export class CourseCategoriesService {
   // Create a new category with translations
   async create(createDto: CreateCourseCategoryDto, userId: string): Promise<{ message: string; data: CourseCategory }> {
 
-    if (createDto.parentId) {
+    if (createDto.parent_id) {
       const parentExists = await this.categoryRepository.findOne({
-        where: { id: createDto.parentId },
+        where: { id: createDto.parent_id },
       });
       if (!parentExists) {
         throw new NotFoundException(trans('category.parent_not_found'));
@@ -34,8 +34,8 @@ export class CourseCategoriesService {
   
     const category = this.categoryRepository.create({
       status: createDto.status || 'active',
-      parentId: createDto.parentId || null,
-      createdBy: userId,
+      parent_id: createDto.parent_id || null,
+      created_by: userId,
     });
 
     const savedCategory = await this.categoryRepository.save(category);
@@ -52,8 +52,8 @@ export class CourseCategoriesService {
       }
 
       const translation = this.translationRepository.create({
-        courseCategoryId: savedCategory.id,
-        languageId: lang.id,
+        course_category_id: savedCategory.id,
+        language_id: lang.id,
         title: tDto.title,
         description: tDto.description || null,
       });
@@ -94,12 +94,12 @@ export class CourseCategoriesService {
       return {
         id: cat.id,
         status: cat.status,
-        parentId: cat.parentId,
-        createdBy: cat.createdBy,
+        parent_id: cat.parent_id,
+        created_by: cat.created_by,
         title: translation ? translation.title : '',
         description: translation ? translation.description : '',
-        createdAt: cat.createdAt,
-        updatedAt: cat.updatedAt,
+        created_at: cat.created_at,
+        updated_at: cat.updated_at,
       };
     });
   }
@@ -139,14 +139,14 @@ export class CourseCategoriesService {
     return {
       id: cat.id,
       status: cat.status,
-      parentId: cat.parentId,
-      createdBy: cat.createdBy,
+      parent_id: cat.parent_id,
+      created_by: cat.created_by,
       parent: cat.parent,
       title: translation ? translation.title : '',
       description: translation ? translation.description : '',
       translations: cat.translations,
-      createdAt: cat.createdAt,
-      updatedAt: cat.updatedAt,
+      created_at: cat.created_at,
+      updated_at: cat.updated_at,
     };
   }
 
@@ -155,12 +155,12 @@ export class CourseCategoriesService {
     const category = await this.findOne(id);
 
     // 1. Validate parent category
-    if (updateDto.parentId) {
-      if (updateDto.parentId === id) {
+    if (updateDto.parent_id) {
+      if (updateDto.parent_id === id) {
         throw new BadRequestException('A category cannot be its own parent.');
       }
       const parentExists = await this.categoryRepository.findOne({
-        where: { id: updateDto.parentId },
+        where: { id: updateDto.parent_id },
       });
       if (!parentExists) {
         throw new NotFoundException(trans('category.parent_not_found'));
@@ -169,14 +169,14 @@ export class CourseCategoriesService {
 
     // 2. Update category core fields
     category.status = updateDto.status || category.status;
-    category.parentId = updateDto.parentId || null;
+    category.parent_id = updateDto.parent_id || null;
 
     const savedCategory = await this.categoryRepository.save(category);
 
     // 4. Delete existing translations that are not in the new payload, and upsert the rest
     const payloadLangCodes = updateDto.translations.map((t) => t.languageCode);
     const existingTranslations = await this.translationRepository.find({
-      where: { courseCategoryId: id },
+      where: { course_category_id: id },
       relations: {
         language: true,
       },
@@ -207,8 +207,8 @@ export class CourseCategoriesService {
         await this.translationRepository.save(existingT);
       } else {
         const newT = this.translationRepository.create({
-          courseCategoryId: id,
-          languageId: lang.id,
+          course_category_id: id,
+          language_id: lang.id,
           title: tDto.title,
           description: tDto.description || null,
         });
@@ -231,7 +231,7 @@ export class CourseCategoriesService {
 
     // Check if category has subcategories
     const childCount = await this.categoryRepository.count({
-      where: { parentId: id },
+      where: { parent_id: id },
     });
 
     if (childCount > 0) {

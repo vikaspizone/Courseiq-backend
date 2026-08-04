@@ -11,10 +11,10 @@ export class RolePermissionEntity {
   role_id!: string;
 
   @Column({ name: 'module_id', type: 'uuid' })
-  moduleId!: string;
+  module_id!: string;
 
   @Column({ name: 'permission_ids', type: 'jsonb', default: [] })
-  permissionIds!: string[];
+  permission_ids!: string[];
 
   @ManyToOne(() => Role, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'role_id' })
@@ -24,9 +24,9 @@ export class RolePermissionEntity {
   @JoinColumn({ name: 'module_id' })
   module!: ModuleEntity;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  createdAt!: Date;
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  created_at!: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt!: Date;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  updated_at!: Date;
 }

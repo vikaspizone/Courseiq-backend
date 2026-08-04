@@ -9,9 +9,9 @@ export class BlacklistedToken {
   @Index({ unique: true })
   token!: string;
 
-  @Column({ type: 'timestamp' })
-  expiresAt!: Date;
+  @Column({ name: 'expires_at', type: 'timestamp' })
+  expires_at!: Date;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  createdAt!: Date;
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  created_at!: Date;
 }

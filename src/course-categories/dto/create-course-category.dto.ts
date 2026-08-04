@@ -50,7 +50,7 @@ export class CreateCourseCategoryDto {
   })
   @IsUUID('4', { message: () => trans('category.parent_not_found') })
   @IsOptional()
-  parentId?: string | null;
+  parent_id?: string | null;
 
   @ApiProperty({
     description: trans('category.swagger_translations_desc'),

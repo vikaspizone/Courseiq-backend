@@ -32,7 +32,7 @@ export class PermissionsService {
     }
 
     const newPermission = this.permissionRepository.create({
-      isActive: createPermissionDto.isActive !== undefined ? createPermissionDto.isActive : true,
+      is_active: createPermissionDto.is_active !== undefined ? createPermissionDto.is_active : true,
     });
 
     const savedPermission = await this.permissionRepository.save(newPermission);
@@ -48,8 +48,8 @@ export class PermissionsService {
       }
 
       const translation = this.translationRepository.create({
-        permissionId: savedPermission.id,
-        languageId: lang.id,
+        permission_id: savedPermission.id,
+        language_id: lang.id,
         name: tDto.name.trim(),
       });
 
@@ -87,10 +87,10 @@ export class PermissionsService {
 
       return {
         id: perm.id,
-        isActive: perm.isActive,
+        is_active: perm.is_active,
         name: translation ? translation.name : '',
-        createdAt: perm.createdAt,
-        updatedAt: perm.updatedAt,
+        created_at: perm.created_at,
+        updated_at: perm.updated_at,
       };
     });
   }
@@ -124,19 +124,19 @@ export class PermissionsService {
 
     return {
       id: perm.id,
-      isActive: perm.isActive,
+      is_active: perm.is_active,
       name: translation ? translation.name : '',
       translations: perm.translations,
-      createdAt: perm.createdAt,
-      updatedAt: perm.updatedAt,
+      created_at: perm.created_at,
+      updated_at: perm.updated_at,
     };
   }
 
   async update(id: string, updatePermissionDto: UpdatePermissionDto): Promise<{ message: string; data: any }> {
     const permission = await this.findOne(id);
 
-    if (updatePermissionDto.isActive !== undefined) {
-      permission.isActive = updatePermissionDto.isActive;
+    if (updatePermissionDto.is_active !== undefined) {
+      permission.is_active = updatePermissionDto.is_active;
     }
 
     const savedPermission = await this.permissionRepository.save(permission);
@@ -144,7 +144,7 @@ export class PermissionsService {
     if (updatePermissionDto.translations) {
       const payloadLangCodes = updatePermissionDto.translations.map((t) => t.languageCode);
       const existingTranslations = await this.translationRepository.find({
-        where: { permissionId: id },
+        where: { permission_id: id },
         relations: {
           language: true,
         },
@@ -156,7 +156,7 @@ export class PermissionsService {
         const conflict = await this.translationRepository.findOne({
           where: { name: nameNormalized },
         });
-        if (conflict && conflict.permissionId !== id) {
+        if (conflict && conflict.permission_id !== id) {
           throw new ConflictException(trans('permission.already_exists', { name: nameNormalized }));
         }
       }
@@ -185,8 +185,8 @@ export class PermissionsService {
           await this.translationRepository.save(existingT);
         } else {
           const newT = this.translationRepository.create({
-            permissionId: id,
-            languageId: lang.id,
+            permission_id: id,
+            language_id: lang.id,
             name: tDto.name.trim(),
           });
           await this.translationRepository.save(newT);

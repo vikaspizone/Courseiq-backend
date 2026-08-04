@@ -77,6 +77,18 @@ export default {
     swagger_parent_desc: 'UUID of the parent category',
     swagger_translations_desc: 'List of translation objects for the category',
   },
+  course: {
+    not_found: 'Course not found.',
+    category_not_found: 'Category not found.',
+    lang_not_found: 'Language code :code is not registered in the database.',
+    created: 'Course created successfully.',
+    updated: 'Course updated successfully.',
+    deleted: 'Course deleted successfully.',
+    slug_exists: 'Course slug already exists.',
+    type_invalid: 'Course type must be either free or paid.',
+    level_invalid: 'Course level must be beginner, intermediate, or advanced.',
+    status_invalid: 'Course status must be draft, coming soon, active, or inactive.',
+  },
   module: {
     not_found: 'Module not found.',
     already_exists: 'Module with name :name already exists.',

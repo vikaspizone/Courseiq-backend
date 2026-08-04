@@ -16,7 +16,7 @@ export class UpdateRolePermissionDto {
   })
   @IsUUID()
   @IsOptional()
-  moduleId?: string;
+  module_id?: string;
 
   @ApiProperty({
     description: 'Array of Permission UUIDs',
@@ -27,5 +27,5 @@ export class UpdateRolePermissionDto {
   @IsArray()
   @IsUUID(undefined, { each: true })
   @IsOptional()
-  permissionIds?: string[];
+  permission_ids?: string[];
 }

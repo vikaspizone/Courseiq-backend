@@ -28,10 +28,10 @@ export class User {
   about?: string;
 
   @Column({ name: 'date_of_birth', type: 'date', nullable: true })
-  dateOfBirth?: Date;
+  date_of_birth?: Date;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  isActive!: boolean;
+  is_active!: boolean;
 
   @Column({ type: 'jsonb', nullable: true })
   qualification?: any;
@@ -49,10 +49,10 @@ export class User {
   work?: any;
 
   @Column({ name: 'created_by', type: 'uuid', nullable: true })
-  createdBy?: string;
+  created_by?: string;
 
   @Column({ name: 'updated_by', type: 'uuid', nullable: true })
-  updatedBy?: string;
+  updated_by?: string;
 
   @ManyToOne(() => Role, { eager: true, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'role_id' })
@@ -61,12 +61,12 @@ export class User {
   @Column({ name: 'role_id', type: 'uuid' })
   role_id!: string;
 
-  @Column({ nullable: true })
-  refreshToken?: string;
+  @Column({ name: 'refresh_token', nullable: true })
+  refresh_token?: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  createdAt!: Date;
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  created_at!: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt!: Date;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  updated_at!: Date;
 }

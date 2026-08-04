@@ -77,6 +77,18 @@ export default {
     swagger_parent_desc: 'अभिभावक (parent) कैटेगरी का UUID',
     swagger_translations_desc: 'कैटेगरी के लिए अनुवाद वस्तुओं की सूची',
   },
+  course: {
+    not_found: 'कोर्स नहीं मिला।',
+    category_not_found: 'कैटेगरी नहीं मिली।',
+    lang_not_found: 'भाषा कोड :code डेटाबेस में पंजीकृत नहीं है।',
+    created: 'कोर्स सफलतापूर्वक बनाया गया।',
+    updated: 'कोर्स सफलतापूर्वक अपडेट किया गया।',
+    deleted: 'कोर्स सफलतापूर्वक हटा दिया गया।',
+    slug_exists: 'कोर्स का स्लग पहले से मौजूद है।',
+    type_invalid: 'कोर्स प्रकार free या paid होना चाहिए।',
+    level_invalid: 'कोर्स स्तर beginner, intermediate, या advanced होना चाहिए।',
+    status_invalid: 'कोर्स स्टेटस draft, coming soon, active, या inactive होना चाहिए।',
+  },
   module: {
     not_found: 'मॉड्यूल नहीं मिला।',
     already_exists: 'नाम :name वाला मॉड्यूल पहले से मौजूद है।',

@@ -30,7 +30,7 @@ export class RolesService {
 
     const newRole = this.roleRepository.create({
       name: nameLower,
-      isActive: createRoleDto.isActive !== undefined ? createRoleDto.isActive : true,
+      is_active: createRoleDto.is_active !== undefined ? createRoleDto.is_active : true,
     });
     const savedRole = await this.roleRepository.save(newRole);
 
@@ -70,8 +70,8 @@ export class RolesService {
     }
 
     role.name = nameLower;
-    if (updateRoleDto.isActive !== undefined) {
-      role.isActive = updateRoleDto.isActive;
+    if (updateRoleDto.is_active !== undefined) {
+      role.is_active = updateRoleDto.is_active;
     }
     const updatedRole = await this.roleRepository.save(role);
 

@@ -9,6 +9,7 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { BlacklistedToken } from '../databaseSchema/blacklisted-token.schema';
 import { trans } from '../utils/trans';
+import { UserRole } from '../utils/enums';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +23,7 @@ export class AuthService {
 
   // User Signup
   async signup(signupDto: SignupDto) {
-    const { email, password, role } = signupDto;
+    const { name, email, password } = signupDto;
 
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser) {
@@ -32,7 +33,7 @@ export class AuthService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = await this.usersService.create(email, hashedPassword, role);
+    const user = await this.usersService.create(name, email, hashedPassword, UserRole.STUDENT);
 
     const tokens = await this.generateTokens(user.id, user.email, user.role?.name || '');
 
@@ -40,6 +41,7 @@ export class AuthService {
       message: trans('auth.user_registered'),
       user: {
         id: user.id,
+        name: user.name,
         email: user.email,
         role: user.role,
       },
@@ -80,11 +82,11 @@ export class AuthService {
       const payload = this.jwtService.verify(refreshToken);
       const user = await this.usersService.findByEmail(payload.email);
 
-      if (!user || !user.refreshToken) {
+      if (!user || !user.refresh_token) {
         throw new UnauthorizedException(trans('auth.refresh_token_invalid'));
       }
 
-      const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+      const isMatch = await bcrypt.compare(refreshToken, user.refresh_token);
       if (!isMatch) {
         throw new UnauthorizedException(trans('auth.refresh_token_invalid'));
       }
@@ -105,19 +107,19 @@ export class AuthService {
 
     try {
       const decoded = this.jwtService.decode(accessToken) as any;
-      const expiresAt = decoded && decoded.exp
+      const expires_at = decoded && decoded.exp
         ? new Date(decoded.exp * 1000)
         : new Date(Date.now() + 24 * 60 * 60 * 1000); // fallback to 24h
 
       const blacklisted = this.blacklistedTokenRepository.create({
         token: accessToken,
-        expiresAt,
+        expires_at,
       });
       await this.blacklistedTokenRepository.save(blacklisted);
     } catch (err) {
       const blacklisted = this.blacklistedTokenRepository.create({
         token: accessToken,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
       });
       await this.blacklistedTokenRepository.save(blacklisted);
     }

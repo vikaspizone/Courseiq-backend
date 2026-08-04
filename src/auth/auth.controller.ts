@@ -33,7 +33,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({})
   async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
-    const [result, error] = await handlePromise(this.authService.refresh(refreshTokenDto.refreshToken));
+    const [result, error] = await handlePromise(this.authService.refresh(refreshTokenDto.refresh_token));
     if (error) throw error;
     return result;
   }

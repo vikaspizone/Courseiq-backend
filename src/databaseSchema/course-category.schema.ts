@@ -8,7 +8,7 @@ export class CourseCategory {
   id!: string;
 
   @Column({ name: 'parent_id', type: 'uuid', nullable: true })
-  parentId!: string | null;
+  parent_id!: string | null;
 
   @ManyToOne(() => CourseCategory, (category) => category.children, { onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'parent_id' })
@@ -21,7 +21,7 @@ export class CourseCategory {
   status!: string;
 
   @Column({ name: 'created_by', type: 'uuid' })
-  createdBy!: string;
+  created_by!: string;
 
   @ManyToOne(() => User, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'created_by' })
@@ -31,8 +31,8 @@ export class CourseCategory {
   translations!: CourseCategoryTranslation[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
-  createdAt!: Date;
+  created_at!: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
-  updatedAt!: Date;
+  updated_at!: Date;
 }

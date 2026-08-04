@@ -5,6 +5,13 @@ import { trans } from '../../utils/trans';
 
 export class SignupDto {
   @ApiProperty({
+    description: 'Name of the user',
+  })
+  @IsString()
+  @IsNotEmpty({ message: () => trans('user.name_required') })
+  name!: string;
+
+  @ApiProperty({
     description: trans('auth.swagger_email_desc'),
   })
   @IsEmail({}, { message: () => trans('auth.email') })
@@ -19,14 +26,5 @@ export class SignupDto {
   @IsNotEmpty({ message: () => trans('auth.password_required') })
   @MinLength(6, { message: (args) => trans('auth.password_min', { min: args.constraints[0] }) })
   password!: string;
-
-  @ApiProperty({
-    description: trans('auth.swagger_role_desc'),
-    enum: UserRole,
-    required: false,
-  })
-  @IsOptional()
-  @IsEnum(UserRole, { message: () => trans('auth.role_enum') })
-  role?: UserRole;
 }
 

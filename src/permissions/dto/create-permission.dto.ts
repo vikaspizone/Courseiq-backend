@@ -28,7 +28,7 @@ export class CreatePermissionDto {
   })
   @IsBoolean()
   @IsOptional()
-  isActive?: boolean;
+  is_active?: boolean;
 
   @ApiProperty({
     description: 'List of translation objects for the permission name',

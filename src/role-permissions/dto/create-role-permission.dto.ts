@@ -14,7 +14,7 @@ export class CreateRolePermissionDto {
   })
   @IsUUID()
   @IsNotEmpty()
-  moduleId!: string;
+  module_id!: string;
 
   @ApiProperty({
     description: 'Array of Permission UUIDs',
@@ -23,5 +23,5 @@ export class CreateRolePermissionDto {
   })
   @IsArray()
   @IsUUID(undefined, { each: true })
-  permissionIds!: string[];
+  permission_ids!: string[];
 }

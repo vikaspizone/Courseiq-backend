@@ -60,7 +60,7 @@ export class UpdateUserDto {
   })
   @IsDateString({}, { message: () => trans('user.dob_invalid') })
   @IsOptional()
-  dateOfBirth?: string;
+  date_of_birth?: string;
 
   @ApiProperty({
     description: 'Is active user',
@@ -68,7 +68,7 @@ export class UpdateUserDto {
   })
   @IsBoolean()
   @IsOptional()
-  isActive?: boolean;
+  is_active?: boolean;
 
   @ApiProperty({
     description: 'User qualification details (JSON)',

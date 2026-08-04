@@ -32,7 +32,7 @@ export class ModulesService {
     }
 
     const newModule = this.moduleRepository.create({
-      isActive: createModuleDto.isActive !== undefined ? createModuleDto.isActive : true,
+      is_active: createModuleDto.is_active !== undefined ? createModuleDto.is_active : true,
     });
 
     const savedModule = await this.moduleRepository.save(newModule);
@@ -48,8 +48,8 @@ export class ModulesService {
       }
 
       const translation = this.translationRepository.create({
-        moduleId: savedModule.id,
-        languageId: lang.id,
+        module_id: savedModule.id,
+        language_id: lang.id,
         name: tDto.name.trim(),
       });
 
@@ -87,10 +87,10 @@ export class ModulesService {
 
       return {
         id: mod.id,
-        isActive: mod.isActive,
+        is_active: mod.is_active,
         name: translation ? translation.name : '',
-        createdAt: mod.createdAt,
-        updatedAt: mod.updatedAt,
+        created_at: mod.created_at,
+        updated_at: mod.updated_at,
       };
     });
   }
@@ -124,19 +124,19 @@ export class ModulesService {
 
     return {
       id: mod.id,
-      isActive: mod.isActive,
+      is_active: mod.is_active,
       name: translation ? translation.name : '',
       translations: mod.translations,
-      createdAt: mod.createdAt,
-      updatedAt: mod.updatedAt,
+      created_at: mod.created_at,
+      updated_at: mod.updated_at,
     };
   }
 
   async update(id: string, updateModuleDto: UpdateModuleDto): Promise<{ message: string; data: any }> {
     const moduleItem = await this.findOne(id);
 
-    if (updateModuleDto.isActive !== undefined) {
-      moduleItem.isActive = updateModuleDto.isActive;
+    if (updateModuleDto.is_active !== undefined) {
+      moduleItem.is_active = updateModuleDto.is_active;
     }
 
     const savedModule = await this.moduleRepository.save(moduleItem);
@@ -144,7 +144,7 @@ export class ModulesService {
     if (updateModuleDto.translations) {
       const payloadLangCodes = updateModuleDto.translations.map((t) => t.languageCode);
       const existingTranslations = await this.translationRepository.find({
-        where: { moduleId: id },
+        where: { module_id: id },
         relations: {
           language: true,
         },
@@ -156,7 +156,7 @@ export class ModulesService {
         const conflict = await this.translationRepository.findOne({
           where: { name: nameNormalized },
         });
-        if (conflict && conflict.moduleId !== id) {
+        if (conflict && conflict.module_id !== id) {
           throw new ConflictException(trans('module.already_exists', { name: nameNormalized }));
         }
       }
@@ -185,8 +185,8 @@ export class ModulesService {
           await this.translationRepository.save(existingT);
         } else {
           const newT = this.translationRepository.create({
-            moduleId: id,
-            languageId: lang.id,
+            module_id: id,
+            language_id: lang.id,
             name: tDto.name.trim(),
           });
           await this.translationRepository.save(newT);
