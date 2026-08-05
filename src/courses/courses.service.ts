@@ -5,6 +5,7 @@ import { Course } from '../databaseSchema/course.schema';
 import { CourseTranslation } from '../databaseSchema/course-translation.schema';
 import { CourseCategory } from '../databaseSchema/course-category.schema';
 import { Language } from '../databaseSchema/language.schema';
+import { CoursePrice } from '../databaseSchema/course-price.schema';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { trans, localeStorage } from '../utils/trans';
@@ -21,6 +22,8 @@ export class CoursesService {
     private readonly categoryRepository: Repository<CourseCategory>,
     @InjectRepository(Language)
     private readonly languageRepository: Repository<Language>,
+    @InjectRepository(CoursePrice)
+    private readonly priceRepository: Repository<CoursePrice>,
   ) {}
 
   // Create a new course with translations
@@ -78,9 +81,30 @@ export class CoursesService {
 
     savedCourse.translations = await this.translationRepository.save(translations);
 
+    if (createDto.prices && createDto.prices.length > 0) {
+      const prices = createDto.prices.map((pDto) =>
+        this.priceRepository.create({
+          course_id: savedCourse.id,
+          currency: pDto.currency,
+          price: pDto.price,
+          discount_price: pDto.discount_price || null,
+          discount_type: pDto.discount_type || null,
+          discount_value: pDto.discount_value || null,
+          discount_start_at: pDto.discount_start_at || null,
+          discount_end_at: pDto.discount_end_at || null,
+          created_by: userId,
+        }),
+      );
+      savedCourse.prices = await this.priceRepository.save(prices);
+    } else {
+      savedCourse.prices = [];
+    }
+
+    const reloaded = await this.findOne(savedCourse.id);
+
     return {
       message: trans('course.created'),
-      data: savedCourse,
+      data: reloaded,
     };
   }
 
@@ -93,6 +117,7 @@ export class CoursesService {
           language: true,
         },
         category: true,
+        prices: true,
       },
     });
 
@@ -124,6 +149,7 @@ export class CoursesService {
         description: translation ? translation.description : '',
         overview: translation ? translation.overview : '',
         category: course.category,
+        prices: course.prices,
         created_at: course.created_at,
         updated_at: course.updated_at,
       };
@@ -141,6 +167,7 @@ export class CoursesService {
         category: true,
         creator: true,
         updater: true,
+        prices: true,
       },
     });
 
@@ -182,6 +209,7 @@ export class CoursesService {
       overview: translation ? translation.overview : '',
       category: course.category,
       translations: course.translations,
+      prices: course.prices,
       created_at: course.created_at,
       updated_at: course.updated_at,
     };
@@ -268,6 +296,29 @@ export class CoursesService {
           await this.translationRepository.save(newT);
         }
       }
+    }
+
+    if (updateDto.prices) {
+      // Remove old prices
+      const existingPrices = await this.priceRepository.find({ where: { course_id: id } });
+      await this.priceRepository.remove(existingPrices);
+
+      // Create new prices
+      const newPrices = updateDto.prices.map((pDto) =>
+        this.priceRepository.create({
+          course_id: id,
+          currency: pDto.currency,
+          price: pDto.price,
+          discount_price: pDto.discount_price || null,
+          discount_type: pDto.discount_type || null,
+          discount_value: pDto.discount_value || null,
+          discount_start_at: pDto.discount_start_at || null,
+          discount_end_at: pDto.discount_end_at || null,
+          created_by: userId,
+          updated_by: userId,
+        }),
+      );
+      await this.priceRepository.save(newPrices);
     }
 
     // Reload with relations

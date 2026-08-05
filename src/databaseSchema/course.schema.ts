@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { CourseCategory } from './course-category.schema';
 import { CourseTranslation } from './course-translation.schema';
+import { CoursePrice } from './course-price.schema';
 import { User } from './user.schema';
 import { CourseType, CourseLevel, CourseStatus } from '../utils/enums';
 
@@ -56,6 +57,9 @@ export class Course {
 
   @OneToMany(() => CourseTranslation, (translation) => translation.course, { cascade: true })
   translations!: CourseTranslation[];
+
+  @OneToMany(() => CoursePrice, (price) => price.course, { cascade: true })
+  prices!: CoursePrice[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   created_at!: Date;

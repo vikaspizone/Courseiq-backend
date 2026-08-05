@@ -1,8 +1,43 @@
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn, IsBoolean, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn, IsBoolean, IsEnum, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { trans } from '../../utils/trans';
-import { CourseType, CourseLevel, CourseStatus } from '../../utils/enums';
+import { CourseType, CourseLevel, CourseStatus, DiscountType } from '../../utils/enums';
+
+export class CoursePriceInputDto {
+  @ApiProperty({ description: 'Currency (e.g. INR, USD)', example: 'INR' })
+  @IsString()
+  @IsNotEmpty()
+  currency!: string;
+
+  @ApiProperty({ description: 'Base price of the course', example: 999.00 })
+  @IsNumber()
+  @Min(0)
+  price!: number;
+
+  @ApiProperty({ description: 'Discount price', required: false, example: 499.00 })
+  @IsNumber()
+  @IsOptional()
+  discount_price?: number;
+
+  @ApiProperty({ description: 'Discount type (fixed or percentage)', enum: DiscountType, required: false })
+  @IsEnum(DiscountType)
+  @IsOptional()
+  discount_type?: DiscountType;
+
+  @ApiProperty({ description: 'Discount value', required: false, example: 500.00 })
+  @IsNumber()
+  @IsOptional()
+  discount_value?: number;
+
+  @ApiProperty({ description: 'Discount start date', required: false })
+  @IsOptional()
+  discount_start_at?: Date;
+
+  @ApiProperty({ description: 'Discount end date', required: false })
+  @IsOptional()
+  discount_end_at?: Date;
+}
 
 export class CourseTranslationInputDto {
   @ApiProperty({
@@ -117,4 +152,15 @@ export class CreateCourseDto {
   @ValidateNested({ each: true })
   @Type(() => CourseTranslationInputDto)
   translations!: CourseTranslationInputDto[];
+
+  @ApiProperty({
+    description: 'Course prices list',
+    type: [CoursePriceInputDto],
+    required: false,
+  })
+  @IsArray({ message: 'Prices must be an array' })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CoursePriceInputDto)
+  prices?: CoursePriceInputDto[];
 }

@@ -11,6 +11,8 @@ import { ModulesModule } from './modules/modules.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolePermissionsModule } from './role-permissions/role-permissions.module';
 import { CoursesModule } from './courses/courses.module';
+import { FavoriteCoursesModule } from './favorite-courses/favorite-courses.module';
+import { CourseRatingsModule } from './course-ratings/course-ratings.module';
 import databaseConfig from './config/database.config';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { LocaleMiddleware } from './middlewares/locale.middleware';
@@ -39,6 +41,8 @@ import { BlacklistedToken } from './databaseSchema/blacklisted-token.schema';
     PermissionsModule,
     RolePermissionsModule,
     CoursesModule,
+    FavoriteCoursesModule,
+    CourseRatingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

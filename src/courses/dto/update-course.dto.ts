@@ -2,7 +2,7 @@ import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { trans } from '../../utils/trans';
-import { CourseTranslationInputDto } from './create-course.dto';
+import { CourseTranslationInputDto, CoursePriceInputDto } from './create-course.dto';
 import { CourseType, CourseLevel, CourseStatus } from '../../utils/enums';
 
 export class UpdateCourseDto {
@@ -91,4 +91,15 @@ export class UpdateCourseDto {
   @ValidateNested({ each: true })
   @Type(() => CourseTranslationInputDto)
   translations?: CourseTranslationInputDto[];
+
+  @ApiProperty({
+    description: 'Course prices list',
+    type: [CoursePriceInputDto],
+    required: false,
+  })
+  @IsArray({ message: 'Prices must be an array' })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CoursePriceInputDto)
+  prices?: CoursePriceInputDto[];
 }

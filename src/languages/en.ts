@@ -118,4 +118,18 @@ export default {
   common: {
     success: 'Success',
   },
+  favorite: {
+    added: 'Course added to favorites successfully.',
+    removed: 'Course removed from favorites successfully.',
+    already_exists: 'Course is already in your favorites.',
+    not_found: 'Favorite course record not found.',
+  },
+  rating: {
+    created: 'Course rating submitted successfully.',
+    updated: 'Course rating updated successfully.',
+    deleted: 'Course rating deleted successfully.',
+    not_found: 'Rating not found.',
+    invalid_rating: 'Rating must be between 1 and 5.',
+    unauthorized_delete: 'You are not authorized to delete this rating.',
+  },
 };

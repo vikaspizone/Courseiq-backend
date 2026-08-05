@@ -22,3 +22,8 @@ export enum CourseStatus {
   INACTIVE = 'inactive',
 }
 
+export enum DiscountType {
+  FIXED = 'fixed',
+  PERCENTAGE = 'percentage',
+}
+
