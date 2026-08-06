@@ -35,6 +35,7 @@ export class ModulesService {
       is_active: createModuleDto.is_active !== undefined ? createModuleDto.is_active : true,
       icon: createModuleDto.icon !== undefined ? createModuleDto.icon : null,
       route: createModuleDto.route !== undefined ? createModuleDto.route : null,
+      sort_order: createModuleDto.sort_order !== undefined ? createModuleDto.sort_order : 0,
     });
 
     const savedModule = await this.moduleRepository.save(newModule);
@@ -74,6 +75,9 @@ export class ModulesService {
           language: true,
         },
       },
+      order: {
+        sort_order: 'ASC',
+      },
     });
 
     return modules.map((mod) => {
@@ -92,6 +96,7 @@ export class ModulesService {
         is_active: mod.is_active,
         icon: mod.icon,
         route: mod.route,
+        sort_order: mod.sort_order,
         name: translation ? translation.name : '',
         created_at: mod.created_at,
         updated_at: mod.updated_at,
@@ -131,6 +136,7 @@ export class ModulesService {
       is_active: mod.is_active,
       icon: mod.icon,
       route: mod.route,
+      sort_order: mod.sort_order,
       name: translation ? translation.name : '',
       translations: mod.translations,
       created_at: mod.created_at,
@@ -151,6 +157,10 @@ export class ModulesService {
 
     if (updateModuleDto.route !== undefined) {
       moduleItem.route = updateModuleDto.route;
+    }
+
+    if (updateModuleDto.sort_order !== undefined) {
+      moduleItem.sort_order = updateModuleDto.sort_order;
     }
 
     const savedModule = await this.moduleRepository.save(moduleItem);

@@ -15,6 +15,9 @@ export class ModuleEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   route!: string | null;
 
+  @Column({ name: 'sort_order', type: 'integer', default: 0 })
+  sort_order!: number;
+
   @OneToMany(() => ModuleTranslation, (translation) => translation.module, { cascade: true })
   translations!: ModuleTranslation[];
 

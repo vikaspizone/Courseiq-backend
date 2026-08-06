@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsBoolean, IsOptional, IsArray, ValidateNested, IsIn } from 'class-validator';
+import { IsNotEmpty, IsString, IsBoolean, IsOptional, IsArray, ValidateNested, IsIn, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -45,6 +45,15 @@ export class CreateModuleDto {
   @IsString()
   @IsOptional()
   route?: string;
+
+  @ApiProperty({
+    description: 'Sort order of the module',
+    required: false,
+    default: 0,
+  })
+  @IsInt()
+  @IsOptional()
+  sort_order?: number;
 
   @ApiProperty({
     description: 'List of translation objects for the module name',
