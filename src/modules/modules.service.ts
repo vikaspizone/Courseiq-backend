@@ -33,6 +33,8 @@ export class ModulesService {
 
     const newModule = this.moduleRepository.create({
       is_active: createModuleDto.is_active !== undefined ? createModuleDto.is_active : true,
+      icon: createModuleDto.icon !== undefined ? createModuleDto.icon : null,
+      route: createModuleDto.route !== undefined ? createModuleDto.route : null,
     });
 
     const savedModule = await this.moduleRepository.save(newModule);
@@ -88,6 +90,8 @@ export class ModulesService {
       return {
         id: mod.id,
         is_active: mod.is_active,
+        icon: mod.icon,
+        route: mod.route,
         name: translation ? translation.name : '',
         created_at: mod.created_at,
         updated_at: mod.updated_at,
@@ -125,6 +129,8 @@ export class ModulesService {
     return {
       id: mod.id,
       is_active: mod.is_active,
+      icon: mod.icon,
+      route: mod.route,
       name: translation ? translation.name : '',
       translations: mod.translations,
       created_at: mod.created_at,
@@ -137,6 +143,14 @@ export class ModulesService {
 
     if (updateModuleDto.is_active !== undefined) {
       moduleItem.is_active = updateModuleDto.is_active;
+    }
+
+    if (updateModuleDto.icon !== undefined) {
+      moduleItem.icon = updateModuleDto.icon;
+    }
+
+    if (updateModuleDto.route !== undefined) {
+      moduleItem.route = updateModuleDto.route;
     }
 
     const savedModule = await this.moduleRepository.save(moduleItem);

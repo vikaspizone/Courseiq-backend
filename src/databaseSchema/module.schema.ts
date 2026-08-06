@@ -9,6 +9,12 @@ export class ModuleEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   is_active!: boolean;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  icon!: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  route!: string | null;
+
   @OneToMany(() => ModuleTranslation, (translation) => translation.module, { cascade: true })
   translations!: ModuleTranslation[];
 
