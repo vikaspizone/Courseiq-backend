@@ -100,6 +100,7 @@ export default {
   permission: {
     not_found: 'Permission not found.',
     already_exists: 'Permission with name :name already exists.',
+    code_exists: 'Permission code :code already exists.',
     created: 'Permission created successfully.',
     updated: 'Permission updated successfully.',
     deleted: 'Permission deleted successfully.',
@@ -117,6 +118,7 @@ export default {
   },
   common: {
     success: 'Success',
+    forbidden: 'You do not have permission to access this resource.',
   },
   favorite: {
     added: 'Course added to favorites successfully.',

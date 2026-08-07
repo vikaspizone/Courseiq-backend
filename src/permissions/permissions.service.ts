@@ -20,6 +20,15 @@ export class PermissionsService {
   ) {}
 
   async create(createPermissionDto: CreatePermissionDto): Promise<{ message: string; data: any }> {
+    // Check if the permission code already exists
+    const codeNormalized = createPermissionDto.code.trim();
+    const existingCode = await this.permissionRepository.findOne({
+      where: { code: codeNormalized },
+    });
+    if (existingCode) {
+      throw new ConflictException(trans('permission.code_exists', { code: createPermissionDto.code }));
+    }
+
     // Check if any of the provided names already exist in the database
     for (const tDto of createPermissionDto.translations) {
       const nameNormalized = tDto.name.trim();
@@ -32,6 +41,7 @@ export class PermissionsService {
     }
 
     const newPermission = this.permissionRepository.create({
+      code: codeNormalized,
       is_active: createPermissionDto.is_active !== undefined ? createPermissionDto.is_active : true,
     });
 
@@ -87,6 +97,7 @@ export class PermissionsService {
 
       return {
         id: perm.id,
+        code: perm.code,
         is_active: perm.is_active,
         name: translation ? translation.name : '',
         created_at: perm.created_at,
@@ -124,6 +135,7 @@ export class PermissionsService {
 
     return {
       id: perm.id,
+      code: perm.code,
       is_active: perm.is_active,
       name: translation ? translation.name : '',
       translations: perm.translations,
@@ -134,6 +146,17 @@ export class PermissionsService {
 
   async update(id: string, updatePermissionDto: UpdatePermissionDto): Promise<{ message: string; data: any }> {
     const permission = await this.findOne(id);
+
+    if (updatePermissionDto.code !== undefined) {
+      const codeNormalized = updatePermissionDto.code.trim();
+      const existingCode = await this.permissionRepository.findOne({
+        where: { code: codeNormalized },
+      });
+      if (existingCode && existingCode.id !== id) {
+        throw new ConflictException(trans('permission.code_exists', { code: updatePermissionDto.code }));
+      }
+      permission.code = codeNormalized;
+    }
 
     if (updatePermissionDto.is_active !== undefined) {
       permission.is_active = updatePermissionDto.is_active;

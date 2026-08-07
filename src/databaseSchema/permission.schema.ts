@@ -6,6 +6,9 @@ export class PermissionEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @Column({ name: 'code', type: 'varchar', unique: true })
+  code?: string;
+
   @Column({ name: 'is_active', type: 'boolean', default: true })
   is_active!: boolean;
 

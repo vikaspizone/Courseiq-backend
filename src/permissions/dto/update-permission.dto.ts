@@ -1,9 +1,17 @@
-import { IsBoolean, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import { IsBoolean, IsOptional, IsArray, ValidateNested, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { PermissionTranslationInputDto } from './create-permission.dto';
 
 export class UpdatePermissionDto {
+  @ApiProperty({
+    description: 'Unique code identifier for the permission',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  code?: string;
+
   @ApiProperty({
     description: 'Active status of the permission',
     required: false,

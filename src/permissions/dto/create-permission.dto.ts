@@ -22,6 +22,13 @@ export class PermissionTranslationInputDto {
 
 export class CreatePermissionDto {
   @ApiProperty({
+    description: 'Unique code identifier for the permission',
+  })
+  @IsString()
+  @IsNotEmpty()
+  code!: string;
+
+  @ApiProperty({
     description: 'Active status of the permission',
     required: false,
     default: true,
