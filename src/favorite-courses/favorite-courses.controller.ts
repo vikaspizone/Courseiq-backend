@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Request } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Request, Query } from '@nestjs/common';
 import { FavoriteCoursesService } from './favorite-courses.service';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 import { handlePromise } from '../utils/async-handler';
 import { IsUUID } from 'class-validator';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Favorite Courses')
 @ApiBearerAuth('JWT-auth')
@@ -39,10 +40,10 @@ export class FavoriteCoursesController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all favorite courses of the authenticated user' })
-  async getFavorites(@Request() req) {
+  async getFavorites(@Query() paginationDto: PaginationDto, @Request() req) {
     const userId = req.user.id;
     const [result, error] = await handlePromise(
-      this.favoriteCoursesService.getFavorites(userId),
+      this.favoriteCoursesService.getFavorites(paginationDto, userId),
     );
     if (error) throw error;
     return result;

@@ -74,17 +74,23 @@ export class PermissionsService {
     };
   }
 
-  async findAll(): Promise<any[]> {
-    const locale = localeStorage.getStore() || 'en';
-    const permissions = await this.permissionRepository.find({
+  async findAll(options: { page?: number; limit?: number }): Promise<any> {
+    const page = Math.max(1, Number(options.page || 1));
+    const limit = Math.max(1, Number(options.limit || 10));
+    const skip = (page - 1) * limit;
+
+    const [items, totalItems] = await this.permissionRepository.findAndCount({
       relations: {
         translations: {
           language: true,
         },
       },
+      skip,
+      take: limit,
     });
 
-    return permissions.map((perm) => {
+    const locale = localeStorage.getStore() || 'en';
+    const mappedItems = items.map((perm) => {
       let translation = perm.translations.find((t) => t.language.code === locale);
 
       if (!translation && locale !== 'en') {
@@ -104,6 +110,19 @@ export class PermissionsService {
         updated_at: perm.updated_at,
       };
     });
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items: mappedItems,
+      meta: {
+        totalItems,
+        itemCount: mappedItems.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      },
+    };
   }
 
   async findOne(id: string): Promise<PermissionEntity> {

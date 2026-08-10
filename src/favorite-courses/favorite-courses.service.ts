@@ -53,14 +53,33 @@ export class FavoriteCoursesService {
     };
   }
 
-  async getFavorites(userId: string): Promise<FavoriteCourse[]> {
-    return this.favoriteCourseRepository.find({
+  async getFavorites(options: { page?: number; limit?: number }, userId: string): Promise<any> {
+    const page = Math.max(1, Number(options.page || 1));
+    const limit = Math.max(1, Number(options.limit || 10));
+    const skip = (page - 1) * limit;
+
+    const [items, totalItems] = await this.favoriteCourseRepository.findAndCount({
       where: { user_id: userId },
       relations: {
         course: {
           translations: true,
         },
       },
+      skip,
+      take: limit,
     });
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items,
+      meta: {
+        totalItems,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      },
+    };
   }
 }

@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Request, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { handlePromise } from '../utils/async-handler';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth('JWT-auth')
@@ -24,8 +25,8 @@ export class UsersController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all users' })
-  async findAll() {
-    const [result, error] = await handlePromise(this.usersService.findAllUsers());
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const [result, error] = await handlePromise(this.usersService.findAllUsers(paginationDto));
     if (error) throw error;
     return result;
   }

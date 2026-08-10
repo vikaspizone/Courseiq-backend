@@ -1,12 +1,15 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, UseGuards, Query } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { handlePromise } from '../utils/async-handler';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Roles')
 @ApiBearerAuth('JWT-auth')
+@UseGuards(PermissionsGuard)
 @Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
@@ -23,8 +26,8 @@ export class RolesController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all roles' })
-  async findAll() {
-    const [result, error] = await handlePromise(this.rolesService.findAll());
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const [result, error] = await handlePromise(this.rolesService.findAll(paginationDto));
     if (error) throw error;
     return result;
   }

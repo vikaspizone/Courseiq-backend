@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Query } from '@nestjs/common';
 import { ModulesService } from './modules.service';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { handlePromise } from '../utils/async-handler';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Modules')
 @ApiBearerAuth('JWT-auth')
@@ -23,8 +24,8 @@ export class ModulesController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all modules' })
-  async findAll() {
-    const [result, error] = await handlePromise(this.modulesService.findAll());
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const [result, error] = await handlePromise(this.modulesService.findAll(paginationDto));
     if (error) throw error;
     return result;
   }

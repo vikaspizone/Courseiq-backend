@@ -6,6 +6,7 @@ import { User } from '../databaseSchema/user.schema';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { trans } from '../utils/trans';
+import { paginate } from '../utils/pagination.helper';
 
 @Injectable()
 export class RolesService {
@@ -41,8 +42,8 @@ export class RolesService {
   }
 
   // Get all roles
-  async findAll(): Promise<Role[]> {
-    return this.roleRepository.find();
+  async findAll(options: { page?: number; limit?: number }): Promise<any> {
+    return paginate(this.roleRepository, options);
   }
 
   // Get role by ID

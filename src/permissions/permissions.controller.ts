@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Query } from '@nestjs/common';
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { handlePromise } from '../utils/async-handler';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Permissions')
 @ApiBearerAuth('JWT-auth')
@@ -23,8 +24,8 @@ export class PermissionsController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all permissions' })
-  async findAll() {
-    const [result, error] = await handlePromise(this.permissionsService.findAll());
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const [result, error] = await handlePromise(this.permissionsService.findAll(paginationDto));
     if (error) throw error;
     return result;
   }

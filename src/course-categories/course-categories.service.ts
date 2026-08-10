@@ -70,17 +70,23 @@ export class CourseCategoriesService {
   }
 
   // Get all categories, localized to the current requested language
-  async findAll(): Promise<any[]> {
-    const locale = localeStorage.getStore() || 'en';
-    const categories = await this.categoryRepository.find({
+  async findAll(options: { page?: number; limit?: number }): Promise<any> {
+    const page = Math.max(1, Number(options.page || 1));
+    const limit = Math.max(1, Number(options.limit || 10));
+    const skip = (page - 1) * limit;
+
+    const [items, totalItems] = await this.categoryRepository.findAndCount({
       relations: {
         translations: {
           language: true,
         },
       },
+      skip,
+      take: limit,
     });
 
-    return categories.map((cat) => {
+    const locale = localeStorage.getStore() || 'en';
+    const mappedItems = items.map((cat) => {
       let translation = cat.translations.find((t) => t.language.code === locale);
 
       if (!translation && locale !== 'en') {
@@ -102,6 +108,19 @@ export class CourseCategoriesService {
         updated_at: cat.updated_at,
       };
     });
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items: mappedItems,
+      meta: {
+        totalItems,
+        itemCount: mappedItems.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      },
+    };
   }
 
   // Get category by ID

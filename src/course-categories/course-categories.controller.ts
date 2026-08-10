@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Request, Query } from '@nestjs/common';
 import { CourseCategoriesService } from './course-categories.service';
 import { CreateCourseCategoryDto } from './dto/create-course-category.dto';
 import { UpdateCourseCategoryDto } from './dto/update-course-category.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { handlePromise } from '../utils/async-handler';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Course Categories')
 @ApiBearerAuth('JWT-auth')
@@ -24,8 +25,8 @@ export class CourseCategoriesController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all course categories (localized)' })
-  async findAll() {
-    const [result, error] = await handlePromise(this.categoriesService.findAll());
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const [result, error] = await handlePromise(this.categoriesService.findAll(paginationDto));
     if (error) throw error;
     return result;
   }

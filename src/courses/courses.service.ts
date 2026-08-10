@@ -109,9 +109,12 @@ export class CoursesService {
   }
 
   // Get all courses, localized
-  async findAll(): Promise<any[]> {
-    const locale = localeStorage.getStore() || 'en';
-    const courses = await this.courseRepository.find({
+  async findAll(options: { page?: number; limit?: number }): Promise<any> {
+    const page = Math.max(1, Number(options.page || 1));
+    const limit = Math.max(1, Number(options.limit || 10));
+    const skip = (page - 1) * limit;
+
+    const [items, totalItems] = await this.courseRepository.findAndCount({
       relations: {
         translations: {
           language: true,
@@ -119,9 +122,12 @@ export class CoursesService {
         category: true,
         prices: true,
       },
+      skip,
+      take: limit,
     });
 
-    return courses.map((course) => {
+    const locale = localeStorage.getStore() || 'en';
+    const mappedItems = items.map((course) => {
       let translation = course.translations.find((t) => t.language.code === locale);
 
       if (!translation && locale !== 'en') {
@@ -154,6 +160,19 @@ export class CoursesService {
         updated_at: course.updated_at,
       };
     });
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items: mappedItems,
+      meta: {
+        totalItems,
+        itemCount: mappedItems.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      },
+    };
   }
 
   // Find course entity by ID helper

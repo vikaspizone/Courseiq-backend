@@ -105,14 +105,32 @@ export class UsersService {
   }
 
   // Find all users
-  async findAllUsers(): Promise<any[]> {
-    const users = await this.userRepository.find({
+  async findAllUsers(options: { page?: number; limit?: number }): Promise<any> {
+    const page = Math.max(1, Number(options.page || 1));
+    const limit = Math.max(1, Number(options.limit || 10));
+    const skip = (page - 1) * limit;
+
+    const [items, totalItems] = await this.userRepository.findAndCount({
       relations: {
         role: true,
       },
+      skip,
+      take: limit,
     });
 
-    return users.map(({ password, refresh_token, ...userWithoutPassword }) => userWithoutPassword);
+    const mappedItems = items.map(({ password, refresh_token, ...userWithoutPassword }) => userWithoutPassword);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items: mappedItems,
+      meta: {
+        totalItems,
+        itemCount: mappedItems.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      },
+    };
   }
 
   // Find user by ID
