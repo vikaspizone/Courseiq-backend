@@ -73,7 +73,7 @@ export class FavoriteCoursesService {
 
     return {
       items,
-      meta: {
+      pagination: {
         totalItems,
         itemCount: items.length,
         itemsPerPage: limit,

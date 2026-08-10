@@ -154,6 +154,16 @@ async function seedPermissionsAndRoleMappings(dataSource: DataSource) {
     const queryRunner = dataSource.createQueryRunner();
 
     const hasModulesTable = await queryRunner.hasTable('modules');
+    if (hasModulesTable) {
+      const columnCheck = await queryRunner.query(
+        `SELECT column_name FROM information_schema.columns WHERE table_name = 'modules' AND column_name = 'route'`
+      );
+      if (columnCheck.length === 0) {
+        logger.log('Adding missing "route" column to "modules" table...');
+        await queryRunner.query(`ALTER TABLE "modules" ADD COLUMN "route" character varying(255)`);
+      }
+    }
+
     const hasPermissionsTable = await queryRunner.hasTable('permissions');
     const hasPermissionTranslationsTable = await queryRunner.hasTable('permission_translations');
     const hasRolePermissionsTable = await queryRunner.hasTable('role_permissions');

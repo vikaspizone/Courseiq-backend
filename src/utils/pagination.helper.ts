@@ -1,6 +1,6 @@
 export interface PaginatedResult<T> {
   items: T[];
-  meta: {
+  pagination: {
     totalItems: number;
     itemCount: number;
     itemsPerPage: number;
@@ -28,7 +28,7 @@ export async function paginate<T>(
 
   return {
     items,
-    meta: {
+    pagination: {
       totalItems,
       itemCount: items.length,
       itemsPerPage: limit,

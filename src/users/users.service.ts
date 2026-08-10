@@ -123,7 +123,7 @@ export class UsersService {
 
     return {
       items: mappedItems,
-      meta: {
+      pagination: {
         totalItems,
         itemCount: mappedItems.length,
         itemsPerPage: limit,

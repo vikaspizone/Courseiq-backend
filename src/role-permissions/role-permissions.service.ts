@@ -92,7 +92,7 @@ export class RolePermissionsService {
 
     return {
       items,
-      meta: {
+      pagination: {
         totalItems,
         itemCount: items.length,
         itemsPerPage: limit,
