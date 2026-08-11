@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { trans } from '../../utils/trans';
@@ -6,15 +6,13 @@ import { CategoryTranslationInputDto } from './create-course-category.dto';
 
 export class UpdateCourseCategoryDto {
   @ApiProperty({
-    description: trans('category.swagger_status_desc'),
-    example: 'active',
-    enum: ['active', 'inactive'],
+    description: 'Activity status of the category',
+    example: true,
     required: false,
   })
-  @IsString()
+  @IsBoolean()
   @IsOptional()
-  @IsIn(['active', 'inactive'], { message: () => trans('category.status_invalid') })
-  status?: string;
+  is_active?: boolean;
 
   @ApiProperty({
     description: trans('category.swagger_parent_desc'),

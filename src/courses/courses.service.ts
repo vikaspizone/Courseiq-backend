@@ -171,6 +171,8 @@ export class CoursesService {
         itemsPerPage: limit,
         totalPages,
         currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
       },
     };
   }

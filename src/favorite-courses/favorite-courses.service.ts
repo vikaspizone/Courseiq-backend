@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FavoriteCourse } from '../databaseSchema/favorite-course.schema';
 import { Course } from '../databaseSchema/course.schema';
-import { trans } from '../utils/trans';
+import { trans, localeStorage } from '../utils/trans';
 
 @Injectable()
 export class FavoriteCoursesService {
@@ -62,23 +62,73 @@ export class FavoriteCoursesService {
       where: { user_id: userId },
       relations: {
         course: {
-          translations: true,
+          translations: {
+            language: true,
+          },
         },
       },
       skip,
       take: limit,
     });
 
+    const locale = localeStorage.getStore() || 'en';
+    const mappedItems = items.map((fav) => {
+      const course = fav.course;
+      if (!course) {
+        return fav;
+      }
+
+      let translation = course.translations.find((t) => t.language.code === locale);
+
+      if (!translation && locale !== 'en') {
+        translation = course.translations.find((t) => t.language.code === 'en');
+      }
+
+      if (!translation && course.translations.length > 0) {
+        translation = course.translations[0];
+      }
+
+      const localizedCourse = {
+        id: course.id,
+        category_id: course.category_id,
+        type: course.type,
+        level: course.level,
+        slug: course.slug,
+        thumbnail: course.thumbnail,
+        image: course.image,
+        language: course.language,
+        topics: course.topics,
+        status: course.status,
+        created_by: course.created_by,
+        updated_by: course.updated_by,
+        title: translation ? translation.title : '',
+        description: translation ? translation.description : '',
+        overview: translation ? translation.overview : '',
+        created_at: course.created_at,
+        updated_at: course.updated_at,
+      };
+
+      return {
+        id: fav.id,
+        user_id: fav.user_id,
+        course_id: fav.course_id,
+        created_at: fav.created_at,
+        course: localizedCourse,
+      };
+    });
+
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
-      items,
+      items: mappedItems,
       pagination: {
         totalItems,
-        itemCount: items.length,
+        itemCount: mappedItems.length,
         itemsPerPage: limit,
         totalPages,
         currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
       },
     };
   }

@@ -17,8 +17,8 @@ export class CourseCategory {
   @OneToMany(() => CourseCategory, (category) => category.parent)
   children!: CourseCategory[];
 
-  @Column({ default: 'active' })
-  status!: string;
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  is_active!: boolean;
 
   @Column({ name: 'created_by', type: 'uuid' })
   created_by!: string;

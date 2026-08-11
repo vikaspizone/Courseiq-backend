@@ -4,7 +4,6 @@ import { CreateRolePermissionDto } from './dto/create-role-permission.dto';
 import { UpdateRolePermissionDto } from './dto/update-role-permission.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { handlePromise } from '../utils/async-handler';
-import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Role Permissions')
 @ApiBearerAuth('JWT-auth')
@@ -25,8 +24,8 @@ export class RolePermissionsController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all role permission mappings' })
   @ApiQuery({ name: 'role_id', required: false, description: 'Filter by role UUID' })
-  async findAll(@Query() paginationDto: PaginationDto, @Query('role_id') role_id?: string) {
-    const [result, error] = await handlePromise(this.rolePermissionsService.findAll(paginationDto, role_id));
+  async findAll(@Query('role_id') role_id?: string) {
+    const [result, error] = await handlePromise(this.rolePermissionsService.findAll(role_id));
     if (error) throw error;
     return result;
   }

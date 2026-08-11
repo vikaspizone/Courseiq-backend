@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { INestApplication, Logger } from '@nestjs/common';
+import { INestApplication, INestApplicationContext, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
@@ -80,8 +80,8 @@ async function seedDefaultRolesAndLanguages(dataSource: DataSource) {
           const passwordHash = await bcrypt.hash(DEFAULT_ADMIN_USER.password, 10);
           logger.log(`Seeding default admin user: ${adminEmail}`);
           await queryRunner.query(
-            `INSERT INTO "users" ("id", "email", "password", "role_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, now(), now())`,
-            [crypto.randomUUID(), adminEmail, passwordHash, roleId],
+            `INSERT INTO "users" ("id", "name", "email", "password", "role_id", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, now(), now())`,
+            [crypto.randomUUID(), 'Admin', adminEmail, passwordHash, roleId],
           );
         } else {
           logger.warn(`Cannot seed admin user: "${DEFAULT_ADMIN_USER.roleName}" role not found in roles table.`);
@@ -189,10 +189,10 @@ async function seedPermissionsAndRoleMappings(dataSource: DataSource) {
         return;
       }
 
-      // Fetch roles
+      // Fetch roles case-insensitively
       const roles = await queryRunner.query(`SELECT "id", "name" FROM "roles"`);
-      const instructorRole = roles.find((r) => r.name === 'instructor');
-      const studentRole = roles.find((r) => r.name === 'student');
+      const instructorRole = roles.find((r) => r.name.toLowerCase() === 'instructor');
+      const studentRole = roles.find((r) => r.name.toLowerCase() === 'student');
 
       if (!instructorRole || !studentRole) {
         logger.warn('Default roles not fully seeded, skipping permission mapping seeding.');
@@ -200,36 +200,8 @@ async function seedPermissionsAndRoleMappings(dataSource: DataSource) {
         return;
       }
 
-      // Seed all modules from config
-      const moduleRouteToId: Record<string, string> = {};
-
-      for (const m of DEFAULT_MODULES) {
-        let moduleId = '';
-        const moduleCheck = await queryRunner.query(`SELECT "id" FROM "modules" WHERE "route" = $1 LIMIT 1`, [m.route]);
-        if (moduleCheck.length > 0) {
-          moduleId = moduleCheck[0].id;
-        } else {
-          moduleId = crypto.randomUUID();
-          logger.log(`Seeding module: ${m.route} (${moduleId})`);
-          await queryRunner.query(
-            `INSERT INTO "modules" ("id", "is_active", "icon", "route", "sort_order", "created_at", "updated_at") VALUES ($1, true, $2, $3, $4, now(), now())`,
-            [moduleId, m.icon, m.route, m.sortOrder],
-          );
-          // Seed translation for module
-          const moduleTransIdEn = crypto.randomUUID();
-          const moduleTransIdHi = crypto.randomUUID();
-          await queryRunner.query(
-            `INSERT INTO "module_translations" ("id", "module_id", "language_id", "name", "created_at", "updated_at") VALUES ($1, $2, $3, $4, now(), now()), ($5, $2, $6, $7, now(), now())`,
-            [moduleTransIdEn, moduleId, enLang.id, m.nameEn, moduleTransIdHi, hiLang.id, m.nameHi],
-          );
-        }
-        moduleRouteToId[m.route] = moduleId;
-      }
-
-      const rolesModuleId = moduleRouteToId['/roles'];
-
-      // Clear old data in permission_translations, permissions, and role_permissions to ensure fresh start
-      logger.log('Clearing old permissions, role permissions, and route mappings...');
+      // 1. Clear old data in correct dependency order to avoid duplicates and FK constraints
+      logger.log('Clearing old permissions, role permissions, module translations, and modules...');
       const hasRoutePermissionMapsTable = await queryRunner.hasTable('route_permission_maps');
       if (hasRoutePermissionMapsTable) {
         await queryRunner.query(`DELETE FROM "route_permission_maps"`);
@@ -237,8 +209,36 @@ async function seedPermissionsAndRoleMappings(dataSource: DataSource) {
       await queryRunner.query(`DELETE FROM "role_permissions"`);
       await queryRunner.query(`DELETE FROM "permission_translations"`);
       await queryRunner.query(`DELETE FROM "permissions"`);
+      
+      const hasModuleTranslationsTable = await queryRunner.hasTable('module_translations');
+      if (hasModuleTranslationsTable) {
+        await queryRunner.query(`DELETE FROM "module_translations"`);
+      }
+      await queryRunner.query(`DELETE FROM "modules"`);
 
-      // Seed all Permissions from config
+      // 2. Seed all modules from config freshly
+      const moduleRouteToId: Record<string, string> = {};
+
+      for (const m of DEFAULT_MODULES) {
+        const moduleId = crypto.randomUUID();
+        logger.log(`Seeding module: ${m.route} (${moduleId})`);
+        await queryRunner.query(
+          `INSERT INTO "modules" ("id", "is_active", "icon", "route", "sort_order", "created_at", "updated_at") VALUES ($1, true, $2, $3, $4, now(), now())`,
+          [moduleId, m.icon, m.route, m.sortOrder],
+        );
+        // Seed translation for module
+        const moduleTransIdEn = crypto.randomUUID();
+        const moduleTransIdHi = crypto.randomUUID();
+        await queryRunner.query(
+          `INSERT INTO "module_translations" ("id", "module_id", "language_id", "name", "created_at", "updated_at") VALUES ($1, $2, $3, $4, now(), now()), ($5, $2, $6, $7, now(), now())`,
+          [moduleTransIdEn, moduleId, enLang.id, m.nameEn, moduleTransIdHi, hiLang.id, m.nameHi],
+        );
+        moduleRouteToId[m.route] = moduleId;
+      }
+
+      const rolesModuleId = moduleRouteToId['/roles'];
+
+      // Seed all Permissions from config freshly
       const permissionCodeToId: Record<string, string> = {};
 
       for (const item of DEFAULT_PERMISSIONS) {
@@ -331,7 +331,7 @@ async function seedPermissionsAndRoleMappings(dataSource: DataSource) {
 /**
  * Programmatically execute database migrations and log reports on success/failure.
  */
-export async function runDatabaseMigrations(app: INestApplication): Promise<void> {
+export async function runDatabaseMigrations(app: INestApplicationContext): Promise<void> {
   const dataSource = app.get(DataSource);
 
   try {

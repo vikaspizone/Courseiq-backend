@@ -31,11 +31,21 @@ export class ModulesService {
       }
     }
 
+    let sortOrder = createModuleDto.sort_order;
+    if (sortOrder === undefined || sortOrder === null) {
+      const maxSortOrder = await this.moduleRepository
+        .createQueryBuilder('module')
+        .select('MAX(module.sort_order)', 'max')
+        .getRawOne();
+      const currentMax = maxSortOrder && maxSortOrder.max !== null ? Number(maxSortOrder.max) : -1;
+      sortOrder = currentMax + 1;
+    }
+
     const newModule = this.moduleRepository.create({
       is_active: createModuleDto.is_active !== undefined ? createModuleDto.is_active : true,
       icon: createModuleDto.icon !== undefined ? createModuleDto.icon : null,
       route: createModuleDto.route !== undefined ? createModuleDto.route : null,
-      sort_order: createModuleDto.sort_order !== undefined ? createModuleDto.sort_order : 0,
+      sort_order: sortOrder,
     });
 
     const savedModule = await this.moduleRepository.save(newModule);
@@ -119,6 +129,8 @@ export class ModulesService {
         itemsPerPage: limit,
         totalPages,
         currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
       },
     };
   }
@@ -249,6 +261,17 @@ export class ModulesService {
   async remove(id: string): Promise<{ message: string }> {
     const moduleItem = await this.findOne(id);
     await this.moduleRepository.remove(moduleItem);
+
+    // Re-sequence remaining modules (0, 1, 2...) to close the gap after deletion
+    const remainingModules = await this.moduleRepository.find({
+      order: { sort_order: 'ASC' },
+    });
+
+    for (let i = 0; i < remainingModules.length; i++) {
+      remainingModules[i].sort_order = i;
+      await this.moduleRepository.save(remainingModules[i]);
+    }
+
     return {
       message: trans('module.deleted'),
     };

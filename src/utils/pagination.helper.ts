@@ -6,6 +6,8 @@ export interface PaginatedResult<T> {
     itemsPerPage: number;
     totalPages: number;
     currentPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
   };
 }
 
@@ -34,6 +36,8 @@ export async function paginate<T>(
       itemsPerPage: limit,
       totalPages,
       currentPage: page,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
     },
   };
 }

@@ -16,19 +16,20 @@ export const DEFAULT_ADMIN_USER = {
 };
 
 export const DEFAULT_MODULES = [
-  { route: '/roles', nameEn: 'Roles', nameHi: 'भूमिकाएं', icon: 'shield', sortOrder: 1 },
-  { route: '/users', nameEn: 'Users', nameHi: 'उपयोगकर्ता', icon: 'users', sortOrder: 2 },
-  { route: '/courses', nameEn: 'Courses', nameHi: 'पाठ्यक्रम', icon: 'book-open', sortOrder: 3 },
-  { route: '/course-categories', nameEn: 'Course Categories', nameHi: 'पाठ्यक्रम श्रेणियां', icon: 'grid', sortOrder: 4 },
-  { route: '/modules', nameEn: 'Modules', nameHi: 'मॉड्यूल', icon: 'layers', sortOrder: 5 },
-  { route: '/permissions', nameEn: 'Permissions', nameHi: 'अनुमतियां', icon: 'key', sortOrder: 6 },
-  { route: '/role-permissions', nameEn: 'Role Permissions', nameHi: 'भूमिका अनुमतियां', icon: 'lock', sortOrder: 7 },
+  { route: '/dashboard', nameEn: 'Dashboard', nameHi: 'डैशबोर्ड', icon: 'shield', sortOrder: 0 },
+  { route: '/role', nameEn: 'Roles', nameHi: 'भूमिकाएं', icon: 'shield', sortOrder: 0 },
+  { route: '/user', nameEn: 'Users', nameHi: 'उपयोगकर्ता', icon: 'users', sortOrder: 1 },
+  { route: '/course', nameEn: 'Courses', nameHi: 'पाठ्यक्रम', icon: 'book-open', sortOrder: 2 },
+  { route: '/course-category', nameEn: 'Course Categories', nameHi: 'पाठ्यक्रम श्रेणियां', icon: 'grid', sortOrder: 3 },
+  { route: '/module', nameEn: 'Modules', nameHi: 'मॉड्यूल', icon: 'layers', sortOrder: 4 },
+  { route: '/permission', nameEn: 'Permissions', nameHi: 'अनुमतियां', icon: 'key', sortOrder: 5 },
+  { route: '/role-permission', nameEn: 'Role Permissions', nameHi: 'भूमिका अनुमतियां', icon: 'lock', sortOrder: 6 },
 ];
 
 export const DEFAULT_PERMISSIONS = [
   { code: 'view', en: 'View', hi: 'देखें' },
   { code: 'create', en: 'Create', hi: 'बनाएं' },
-  { code: 'update', en: 'Update', hi: 'अपडेट' },
+  { code: 'edit', en: 'Edit', hi: 'संपादित करें' },
   { code: 'delete', en: 'Delete', hi: 'हटाएं' },
   { code: 'status', en: 'Status', hi: 'स्टेटस' },
   { code: 'publish', en: 'Publish', hi: 'प्रकाशित' },
@@ -48,49 +49,49 @@ export const DEFAULT_ROUTE_PERMISSION_MAPS = [
   { method: 'POST', route: '/roles', permission_code: 'create' },
   { method: 'GET', route: '/roles', permission_code: 'view' },
   { method: 'GET', route: '/roles/:id', permission_code: 'view' },
-  { method: 'PUT', route: '/roles/:id', permission_code: 'update' },
+  { method: 'PUT', route: '/roles/:id', permission_code: 'edit' },
   { method: 'DELETE', route: '/roles/:id', permission_code: 'delete' },
 
   // Users module
   { method: 'POST', route: '/users', permission_code: 'create' },
   { method: 'GET', route: '/users', permission_code: 'view' },
   { method: 'GET', route: '/users/:id', permission_code: 'view' },
-  { method: 'PUT', route: '/users/:id', permission_code: 'update' },
+  { method: 'PUT', route: '/users/:id', permission_code: 'edit' },
   { method: 'DELETE', route: '/users/:id', permission_code: 'delete' },
 
   // Course Categories module
   { method: 'POST', route: '/course-categories', permission_code: 'create' },
   { method: 'GET', route: '/course-categories', permission_code: 'view' },
   { method: 'GET', route: '/course-categories/:id', permission_code: 'view' },
-  { method: 'PUT', route: '/course-categories/:id', permission_code: 'update' },
+  { method: 'PUT', route: '/course-categories/:id', permission_code: 'edit' },
   { method: 'DELETE', route: '/course-categories/:id', permission_code: 'delete' },
 
   // Modules module
   { method: 'POST', route: '/modules', permission_code: 'create' },
   { method: 'GET', route: '/modules', permission_code: 'view' },
   { method: 'GET', route: '/modules/:id', permission_code: 'view' },
-  { method: 'PUT', route: '/modules/:id', permission_code: 'update' },
+  { method: 'PUT', route: '/modules/:id', permission_code: 'edit' },
   { method: 'DELETE', route: '/modules/:id', permission_code: 'delete' },
 
   // Permissions module
   { method: 'POST', route: '/permissions', permission_code: 'create' },
   { method: 'GET', route: '/permissions', permission_code: 'view' },
   { method: 'GET', route: '/permissions/:id', permission_code: 'view' },
-  { method: 'PUT', route: '/permissions/:id', permission_code: 'update' },
+  { method: 'PUT', route: '/permissions/:id', permission_code: 'edit' },
   { method: 'DELETE', route: '/permissions/:id', permission_code: 'delete' },
 
   // Role Permissions module
   { method: 'POST', route: '/role-permissions', permission_code: 'create' },
   { method: 'GET', route: '/role-permissions', permission_code: 'view' },
   { method: 'GET', route: '/role-permissions/:id', permission_code: 'view' },
-  { method: 'PUT', route: '/role-permissions/:id', permission_code: 'update' },
+  { method: 'PUT', route: '/role-permissions/:id', permission_code: 'edit' },
   { method: 'DELETE', route: '/role-permissions/:id', permission_code: 'delete' },
 
   // Courses module
   { method: 'POST', route: '/courses', permission_code: 'create' },
   { method: 'GET', route: '/courses', permission_code: 'view' },
   { method: 'GET', route: '/courses/:id', permission_code: 'view' },
-  { method: 'PUT', route: '/courses/:id', permission_code: 'update' },
+  { method: 'PUT', route: '/courses/:id', permission_code: 'edit' },
   { method: 'DELETE', route: '/courses/:id', permission_code: 'delete' },
 
   // Favorite Courses module
@@ -105,6 +106,15 @@ export const DEFAULT_ROUTE_PERMISSION_MAPS = [
 ];
 
 export const DEFAULT_ROLE_PERMISSIONS = [
+  {
+    roleName: 'admin',
+    defaultPermissionCodes: [
+      'view', 'create', 'edit', 'delete', 'status',
+      'publish', 'unpublish', 'approve', 'reject', 'assign',
+      'review', 'preview', 'download', 'upload', 'manage'
+    ],
+    overrides: {} as Record<string, string[]>,
+  },
   {
     roleName: 'instructor',
     defaultPermissionCodes: ['view'],

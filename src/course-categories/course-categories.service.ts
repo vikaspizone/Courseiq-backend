@@ -33,7 +33,7 @@ export class CourseCategoriesService {
 
   
     const category = this.categoryRepository.create({
-      status: createDto.status || 'active',
+      is_active: createDto.is_active !== undefined ? createDto.is_active : true,
       parent_id: createDto.parent_id || null,
       created_by: userId,
     });
@@ -99,7 +99,7 @@ export class CourseCategoriesService {
 
       return {
         id: cat.id,
-        status: cat.status,
+        is_active: cat.is_active,
         parent_id: cat.parent_id,
         created_by: cat.created_by,
         title: translation ? translation.title : '',
@@ -119,6 +119,8 @@ export class CourseCategoriesService {
         itemsPerPage: limit,
         totalPages,
         currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
       },
     };
   }
@@ -156,17 +158,17 @@ export class CourseCategoriesService {
     }
 
     return {
-      id: cat.id,
-      status: cat.status,
-      parent_id: cat.parent_id,
-      created_by: cat.created_by,
-      parent: cat.parent,
-      title: translation ? translation.title : '',
-      description: translation ? translation.description : '',
-      translations: cat.translations,
-      created_at: cat.created_at,
-      updated_at: cat.updated_at,
-    };
+       id: cat.id,
+       is_active: cat.is_active,
+       parent_id: cat.parent_id,
+       created_by: cat.created_by,
+       parent: cat.parent,
+       title: translation ? translation.title : '',
+       description: translation ? translation.description : '',
+       translations: cat.translations,
+       created_at: cat.created_at,
+       updated_at: cat.updated_at,
+     };
   }
 
   // Update category and its translations
@@ -187,7 +189,7 @@ export class CourseCategoriesService {
     }
 
     // 2. Update category core fields
-    category.status = updateDto.status || category.status;
+    category.is_active = updateDto.is_active !== undefined ? updateDto.is_active : category.is_active;
     category.parent_id = updateDto.parent_id || null;
 
     const savedCategory = await this.categoryRepository.save(category);

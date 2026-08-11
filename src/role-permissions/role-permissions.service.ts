@@ -69,11 +69,7 @@ export class RolePermissionsService {
     };
   }
 
-  async findAll(options: { page?: number; limit?: number }, role_id?: string): Promise<any> {
-    const page = Math.max(1, Number(options.page || 1));
-    const limit = Math.max(1, Number(options.limit || 10));
-    const skip = (page - 1) * limit;
-
+  async findAll(role_id?: string): Promise<RolePermissionEntity[]> {
     const queryBuilder = this.rolePermissionRepository.createQueryBuilder('rolePermission')
       .leftJoinAndSelect('rolePermission.role', 'role')
       .leftJoinAndSelect('rolePermission.module', 'module')
@@ -83,23 +79,7 @@ export class RolePermissionsService {
       queryBuilder.andWhere('rolePermission.role_id = :role_id', { role_id });
     }
 
-    const [items, totalItems] = await queryBuilder
-      .skip(skip)
-      .take(limit)
-      .getManyAndCount();
-
-    const totalPages = Math.ceil(totalItems / limit);
-
-    return {
-      items,
-      pagination: {
-        totalItems,
-        itemCount: items.length,
-        itemsPerPage: limit,
-        totalPages,
-        currentPage: page,
-      },
-    };
+    return queryBuilder.getMany();
   }
 
   async findOne(id: string): Promise<RolePermissionEntity> {
