@@ -1,8 +1,8 @@
 import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn, IsBoolean, IsEnum } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform, plainToInstance } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { trans } from '../../utils/trans';
-import { CourseTranslationInputDto, CoursePriceInputDto } from './create-course.dto';
+import { CourseTranslationInputDto, CoursePriceInputDto, transformJson, transformJsonArray } from './create-course.dto';
 import { CourseType, CourseLevel, CourseStatus } from '../../utils/enums';
 
 export class UpdateCourseDto {
@@ -41,20 +41,22 @@ export class UpdateCourseDto {
   slug?: string;
 
   @ApiProperty({
-    description: 'Course thumbnail URL',
+    description: 'Course thumbnail file to upload',
+    type: 'string',
+    format: 'binary',
     required: false,
   })
-  @IsString()
   @IsOptional()
-  thumbnail?: string;
+  thumbnail?: any;
 
   @ApiProperty({
-    description: 'Course image URL',
+    description: 'Course image file to upload',
+    type: 'string',
+    format: 'binary',
     required: false,
   })
-  @IsString()
   @IsOptional()
-  image?: string;
+  image?: any;
 
   @ApiProperty({
     description: 'Course primary language name',
@@ -69,6 +71,7 @@ export class UpdateCourseDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => transformJson(value))
   topics?: any;
 
 
@@ -86,6 +89,7 @@ export class UpdateCourseDto {
     type: [CourseTranslationInputDto],
     required: false,
   })
+  @Transform(({ value }) => transformJsonArray(value, CourseTranslationInputDto))
   @IsArray({ message: 'Translations must be an array' })
   @IsOptional()
   @ValidateNested({ each: true })
@@ -93,13 +97,23 @@ export class UpdateCourseDto {
   translations?: CourseTranslationInputDto[];
 
   @ApiProperty({
-    description: 'Course prices list',
-    type: [CoursePriceInputDto],
+    description: 'Course price detail',
+    type: CoursePriceInputDto,
     required: false,
   })
-  @IsArray({ message: 'Prices must be an array' })
+  @Transform(({ value }) => {
+    if (value === undefined || value === null) return value;
+    if (typeof value === 'string') {
+      try {
+        return plainToInstance(CoursePriceInputDto, JSON.parse(value));
+      } catch {
+        return value;
+      }
+    }
+    return plainToInstance(CoursePriceInputDto, value);
+  })
   @IsOptional()
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => CoursePriceInputDto)
-  prices?: CoursePriceInputDto[];
+  price?: CoursePriceInputDto;
 }

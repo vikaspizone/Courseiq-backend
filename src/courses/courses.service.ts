@@ -8,6 +8,8 @@ import { Language } from '../databaseSchema/language.schema';
 import { CoursePrice } from '../databaseSchema/course-price.schema';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { CourseFilterDto } from './dto/course-filter.dto';
+import { CourseRating } from '../databaseSchema/course-rating.schema';
 import { trans, localeStorage } from '../utils/trans';
 import { CourseType, CourseLevel, CourseStatus } from '../utils/enums';
 
@@ -81,26 +83,25 @@ export class CoursesService {
 
     savedCourse.translations = await this.translationRepository.save(translations);
 
-    if (createDto.prices && createDto.prices.length > 0) {
-      const prices = createDto.prices.map((pDto) =>
-        this.priceRepository.create({
-          course_id: savedCourse.id,
-          currency: pDto.currency,
-          price: pDto.price,
-          discount_price: pDto.discount_price || null,
-          discount_type: pDto.discount_type || null,
-          discount_value: pDto.discount_value || null,
-          discount_start_at: pDto.discount_start_at || null,
-          discount_end_at: pDto.discount_end_at || null,
-          created_by: userId,
-        }),
-      );
-      savedCourse.prices = await this.priceRepository.save(prices);
+    if (createDto.price) {
+      const pDto = createDto.price;
+      const priceRecord = this.priceRepository.create({
+        course_id: savedCourse.id,
+        currency: pDto.currency,
+        price: pDto.price,
+        discount_price: pDto.discount_price || null,
+        discount_type: pDto.discount_type || null,
+        discount_value: pDto.discount_value || null,
+        discount_start_at: pDto.discount_start_at || null,
+        discount_end_at: pDto.discount_end_at || null,
+        created_by: userId,
+      });
+      savedCourse.prices = [await this.priceRepository.save(priceRecord)];
     } else {
       savedCourse.prices = [];
     }
 
-    const reloaded = await this.findOne(savedCourse.id);
+    const reloaded = await this.findOneLocalized(savedCourse.id);
 
     return {
       message: trans('course.created'),
@@ -108,23 +109,89 @@ export class CoursesService {
     };
   }
 
-  // Get all courses, localized
-  async findAll(options: { page?: number; limit?: number }): Promise<any> {
+  async findAll(options: CourseFilterDto): Promise<any> {
     const page = Math.max(1, Number(options.page || 1));
     const limit = Math.max(1, Number(options.limit || 10));
     const skip = (page - 1) * limit;
 
-    const [items, totalItems] = await this.courseRepository.findAndCount({
-      relations: {
-        translations: {
-          language: true,
-        },
-        category: true,
-        prices: true,
-      },
-      skip,
-      take: limit,
-    });
+    const queryBuilder = this.courseRepository.createQueryBuilder('course')
+      .leftJoinAndSelect('course.translations', 'translation')
+      .leftJoinAndSelect('translation.language', 'language')
+      .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect('category.translations', 'categoryTranslation')
+      .leftJoinAndSelect('categoryTranslation.language', 'categoryLanguage')
+      .leftJoinAndSelect('course.prices', 'prices');
+
+    if (options.search) {
+      queryBuilder.andWhere(
+        '(LOWER(translation.title) LIKE LOWER(:search) OR LOWER(translation.description) LIKE LOWER(:search))',
+        { search: `%${options.search}%` },
+      );
+    }
+
+    if (options.category_id) {
+      queryBuilder.andWhere('course.category_id = :category_id', { category_id: options.category_id });
+    }
+
+    if (options.course_level) {
+      queryBuilder.andWhere('course.level = :course_level', { course_level: options.course_level });
+    }
+
+    if (options.min_price !== undefined) {
+      queryBuilder.andWhere('COALESCE(prices.discount_price, prices.price) >= :min_price', { min_price: options.min_price });
+    }
+
+    if (options.max_price !== undefined) {
+      queryBuilder.andWhere('COALESCE(prices.discount_price, prices.price) <= :max_price', { max_price: options.max_price });
+    }
+
+    if (options.min_rating !== undefined || options.max_rating !== undefined) {
+      const subQuery = this.courseRepository.manager.createQueryBuilder(CourseRating, 'r')
+        .select('r.course_id')
+        .groupBy('r.course_id');
+
+      if (options.min_rating !== undefined) {
+        subQuery.having('AVG(r.rating) >= :min_rating', { min_rating: options.min_rating });
+      }
+      if (options.max_rating !== undefined) {
+        if (options.min_rating !== undefined) {
+          subQuery.andHaving('AVG(r.rating) <= :max_rating', { max_rating: options.max_rating });
+        } else {
+          subQuery.having('AVG(r.rating) <= :max_rating', { max_rating: options.max_rating });
+        }
+      }
+
+      queryBuilder.andWhere(`course.id IN (${subQuery.getQuery()})`, subQuery.getParameters());
+    }
+
+    if (options.sort_by === 'price_asc') {
+      queryBuilder.orderBy('COALESCE(prices.discount_price, prices.price)', 'ASC');
+    } else if (options.sort_by === 'price_desc') {
+      queryBuilder.orderBy('COALESCE(prices.discount_price, prices.price)', 'DESC');
+    } else if (options.sort_by === 'rating_desc') {
+      queryBuilder.addSelect((subQuery) => {
+        return subQuery
+          .select('COALESCE(AVG(r.rating), 0)', 'avg_rating')
+          .from(CourseRating, 'r')
+          .where('r.course_id = course.id');
+      }, 'avg_rating');
+      queryBuilder.orderBy('avg_rating', 'DESC');
+    } else if (options.sort_by === 'rating_asc') {
+      queryBuilder.addSelect((subQuery) => {
+        return subQuery
+          .select('COALESCE(AVG(r.rating), 0)', 'avg_rating')
+          .from(CourseRating, 'r')
+          .where('r.course_id = course.id');
+      }, 'avg_rating');
+      queryBuilder.orderBy('avg_rating', 'ASC');
+    } else {
+      queryBuilder.orderBy('course.created_at', 'DESC');
+    }
+
+    const [items, totalItems] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
 
     const locale = localeStorage.getStore() || 'en';
     const mappedItems = items.map((course) => {
@@ -136,6 +203,27 @@ export class CoursesService {
 
       if (!translation && course.translations.length > 0) {
         translation = course.translations[0];
+      }
+
+      let categoryData: any = null;
+      if (course.category) {
+        let catTranslation = course.category.translations?.find((t) => t.language.code === locale);
+        if (!catTranslation && locale !== 'en') {
+          catTranslation = course.category.translations?.find((t) => t.language.code === 'en');
+        }
+        if (!catTranslation && course.category.translations?.length > 0) {
+          catTranslation = course.category.translations[0];
+        }
+        categoryData = {
+          id: course.category.id,
+          parent_id: course.category.parent_id,
+          is_active: course.category.is_active,
+          created_by: course.category.created_by,
+          created_at: course.category.created_at,
+          updated_at: course.category.updated_at,
+          name: catTranslation ? catTranslation.title : '',
+          title: catTranslation ? catTranslation.title : '',
+        };
       }
 
       return {
@@ -154,8 +242,8 @@ export class CoursesService {
         title: translation ? translation.title : '',
         description: translation ? translation.description : '',
         overview: translation ? translation.overview : '',
-        category: course.category,
-        prices: course.prices,
+        category: categoryData,
+        price: course.prices && course.prices.length > 0 ? course.prices[0] : null,
         created_at: course.created_at,
         updated_at: course.updated_at,
       };
@@ -185,7 +273,11 @@ export class CoursesService {
         translations: {
           language: true,
         },
-        category: true,
+        category: {
+          translations: {
+            language: true,
+          },
+        },
         creator: true,
         updater: true,
         prices: true,
@@ -212,6 +304,27 @@ export class CoursesService {
       translation = course.translations[0];
     }
 
+    let categoryData: any = null;
+    if (course.category) {
+      let catTranslation = course.category.translations?.find((t) => t.language.code === locale);
+      if (!catTranslation && locale !== 'en') {
+        catTranslation = course.category.translations?.find((t) => t.language.code === 'en');
+      }
+      if (!catTranslation && course.category.translations?.length > 0) {
+        catTranslation = course.category.translations[0];
+      }
+      categoryData = {
+        id: course.category.id,
+        parent_id: course.category.parent_id,
+        is_active: course.category.is_active,
+        created_by: course.category.created_by,
+        created_at: course.category.created_at,
+        updated_at: course.category.updated_at,
+        name: catTranslation ? catTranslation.title : '',
+        title: catTranslation ? catTranslation.title : '',
+      };
+    }
+
     return {
       id: course.id,
       category_id: course.category_id,
@@ -228,9 +341,8 @@ export class CoursesService {
       title: translation ? translation.title : '',
       description: translation ? translation.description : '',
       overview: translation ? translation.overview : '',
-      category: course.category,
-      translations: course.translations,
-      prices: course.prices,
+      category: categoryData,
+      price: course.prices && course.prices.length > 0 ? course.prices[0] : null,
       created_at: course.created_at,
       updated_at: course.updated_at,
     };
@@ -319,14 +431,15 @@ export class CoursesService {
       }
     }
 
-    if (updateDto.prices) {
+    if (updateDto.hasOwnProperty('price')) {
       // Remove old prices
       const existingPrices = await this.priceRepository.find({ where: { course_id: id } });
       await this.priceRepository.remove(existingPrices);
 
-      // Create new prices
-      const newPrices = updateDto.prices.map((pDto) =>
-        this.priceRepository.create({
+      if (updateDto.price) {
+        // Create new price
+        const pDto = updateDto.price;
+        const newPrice = this.priceRepository.create({
           course_id: id,
           currency: pDto.currency,
           price: pDto.price,
@@ -337,13 +450,13 @@ export class CoursesService {
           discount_end_at: pDto.discount_end_at || null,
           created_by: userId,
           updated_by: userId,
-        }),
-      );
-      await this.priceRepository.save(newPrices);
+        });
+        await this.priceRepository.save(newPrice);
+      }
     }
 
-    // Reload with relations
-    const updatedCourse = await this.findOne(id);
+    // Reload localized
+    const updatedCourse = await this.findOneLocalized(id);
 
     return {
       message: trans('course.updated'),

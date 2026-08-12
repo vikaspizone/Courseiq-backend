@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { Role } from '../databaseSchema/role.schema';
 import { User } from '../databaseSchema/user.schema';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -42,8 +42,14 @@ export class RolesService {
   }
 
   // Get all roles
-  async findAll(options: { page?: number; limit?: number }): Promise<any> {
-    return paginate(this.roleRepository, options);
+  async findAll(options: { page?: number; limit?: number; search?: string }): Promise<any> {
+    const findOptions: any = {};
+    if (options.search) {
+      findOptions.where = {
+        name: Like(`%${options.search.toLowerCase().trim()}%`),
+      };
+    }
+    return paginate(this.roleRepository, options, findOptions);
   }
 
   // Get role by ID

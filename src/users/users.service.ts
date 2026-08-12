@@ -104,19 +104,26 @@ export class UsersService {
     return userWithoutPassword;
   }
 
-  // Find all users
-  async findAllUsers(options: { page?: number; limit?: number }): Promise<any> {
+  async findAllUsers(options: { page?: number; limit?: number; search?: string }): Promise<any> {
     const page = Math.max(1, Number(options.page || 1));
     const limit = Math.max(1, Number(options.limit || 10));
     const skip = (page - 1) * limit;
 
-    const [items, totalItems] = await this.userRepository.findAndCount({
-      relations: {
-        role: true,
-      },
-      skip,
-      take: limit,
-    });
+    const queryBuilder = this.userRepository.createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .orderBy('user.created_at', 'DESC');
+
+    if (options.search) {
+      queryBuilder.andWhere(
+        '(LOWER(user.name) LIKE LOWER(:search) OR LOWER(user.email) LIKE LOWER(:search))',
+        { search: `%${options.search}%` }
+      );
+    }
+
+    const [items, totalItems] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
 
     const mappedItems = items.map(({ password, refresh_token, ...userWithoutPassword }) => userWithoutPassword);
     const totalPages = Math.ceil(totalItems / limit);

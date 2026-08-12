@@ -77,23 +77,27 @@ export class ModulesService {
     };
   }
 
-  async findAll(options: { page?: number; limit?: number }): Promise<any> {
+  async findAll(options: { page?: number; limit?: number; search?: string }): Promise<any> {
     const page = Math.max(1, Number(options.page || 1));
     const limit = Math.max(1, Number(options.limit || 10));
     const skip = (page - 1) * limit;
 
-    const [items, totalItems] = await this.moduleRepository.findAndCount({
-      relations: {
-        translations: {
-          language: true,
-        },
-      },
-      order: {
-        sort_order: 'ASC',
-      },
-      skip,
-      take: limit,
-    });
+    const queryBuilder = this.moduleRepository.createQueryBuilder('module')
+      .leftJoinAndSelect('module.translations', 'translation')
+      .leftJoinAndSelect('translation.language', 'language')
+      .orderBy('module.sort_order', 'ASC');
+
+    if (options.search) {
+      queryBuilder.andWhere(
+        '(LOWER(module.route) LIKE LOWER(:search) OR LOWER(translation.name) LIKE LOWER(:search))',
+        { search: `%${options.search}%` },
+      );
+    }
+
+    const [items, totalItems] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
 
     const locale = localeStorage.getStore() || 'en';
     const mappedItems = items.map((mod) => {
@@ -169,7 +173,6 @@ export class ModulesService {
       route: mod.route,
       sort_order: mod.sort_order,
       name: translation ? translation.name : '',
-      translations: mod.translations,
       created_at: mod.created_at,
       updated_at: mod.updated_at,
     };

@@ -17,13 +17,12 @@ export const DEFAULT_ADMIN_USER = {
 
 export const DEFAULT_MODULES = [
   { route: '/dashboard', nameEn: 'Dashboard', nameHi: 'डैशबोर्ड', icon: 'shield', sortOrder: 0 },
-  { route: '/role', nameEn: 'Roles', nameHi: 'भूमिकाएं', icon: 'shield', sortOrder: 0 },
-  { route: '/user', nameEn: 'Users', nameHi: 'उपयोगकर्ता', icon: 'users', sortOrder: 1 },
-  { route: '/course', nameEn: 'Courses', nameHi: 'पाठ्यक्रम', icon: 'book-open', sortOrder: 2 },
-  { route: '/course-category', nameEn: 'Course Categories', nameHi: 'पाठ्यक्रम श्रेणियां', icon: 'grid', sortOrder: 3 },
-  { route: '/module', nameEn: 'Modules', nameHi: 'मॉड्यूल', icon: 'layers', sortOrder: 4 },
-  { route: '/permission', nameEn: 'Permissions', nameHi: 'अनुमतियां', icon: 'key', sortOrder: 5 },
-  { route: '/role-permission', nameEn: 'Role Permissions', nameHi: 'भूमिका अनुमतियां', icon: 'lock', sortOrder: 6 },
+  { route: '/role', nameEn: 'Roles', nameHi: 'भूमिकाएं', icon: 'shield', sortOrder: 1 },
+  { route: '/user', nameEn: 'Users', nameHi: 'उपयोगकर्ता', icon: 'users', sortOrder: 2 },
+  { route: '/course', nameEn: 'Courses', nameHi: 'पाठ्यक्रम', icon: 'book-open', sortOrder: 3 },
+  { route: '/course-category', nameEn: 'Course Categories', nameHi: 'पाठ्यक्रम श्रेणियां', icon: 'grid', sortOrder: 4 },
+  { route: '/module', nameEn: 'Modules', nameHi: 'मॉड्यूल', icon: 'layers', sortOrder: 5 },
+  { route: '/permission', nameEn: 'Permissions', nameHi: 'अनुमतियां', icon: 'key', sortOrder: 6 }
 ];
 
 export const DEFAULT_PERMISSIONS = [

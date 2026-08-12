@@ -74,20 +74,27 @@ export class PermissionsService {
     };
   }
 
-  async findAll(options: { page?: number; limit?: number }): Promise<any> {
+  async findAll(options: { page?: number; limit?: number; search?: string }): Promise<any> {
     const page = Math.max(1, Number(options.page || 1));
     const limit = Math.max(1, Number(options.limit || 10));
     const skip = (page - 1) * limit;
 
-    const [items, totalItems] = await this.permissionRepository.findAndCount({
-      relations: {
-        translations: {
-          language: true,
-        },
-      },
-      skip,
-      take: limit,
-    });
+    const queryBuilder = this.permissionRepository.createQueryBuilder('permission')
+      .leftJoinAndSelect('permission.translations', 'translation')
+      .leftJoinAndSelect('translation.language', 'language')
+      .orderBy('permission.created_at', 'DESC');
+
+    if (options.search) {
+      queryBuilder.andWhere(
+        '(LOWER(permission.code) LIKE LOWER(:search) OR LOWER(translation.name) LIKE LOWER(:search))',
+        { search: `%${options.search}%` },
+      );
+    }
+
+    const [items, totalItems] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
 
     const locale = localeStorage.getStore() || 'en';
     const mappedItems = items.map((perm) => {
@@ -159,7 +166,6 @@ export class PermissionsService {
       code: perm.code,
       is_active: perm.is_active,
       name: translation ? translation.name : '',
-      translations: perm.translations,
       created_at: perm.created_at,
       updated_at: perm.updated_at,
     };

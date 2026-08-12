@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Request, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Request, UseGuards, Query, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { CourseFilterDto } from './dto/course-filter.dto';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiConsumes } from '@nestjs/swagger';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { handlePromise } from '../utils/async-handler';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { getMulterOptions } from '../config/multer.config';
 
 @ApiTags('Courses')
 @ApiBearerAuth('JWT-auth')
@@ -17,8 +19,27 @@ export class CoursesController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new course with translations' })
-  async create(@Body() createDto: CreateCourseDto, @Request() req) {
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'thumbnail', maxCount: 1 },
+      { name: 'image', maxCount: 1 },
+    ], getMulterOptions('image', 'courses')),
+  )
+  async create(
+    @Body() createDto: CreateCourseDto,
+    @Request() req,
+    @UploadedFiles() files: { thumbnail?: Express.Multer.File[]; image?: Express.Multer.File[] },
+  ) {
     const userId = req.user.id;
+    if (files) {
+      if (files.thumbnail && files.thumbnail.length > 0) {
+        createDto.thumbnail = `/uploads/images/courses/${files.thumbnail[0].filename}`;
+      }
+      if (files.image && files.image.length > 0) {
+        createDto.image = `/uploads/images/courses/${files.image[0].filename}`;
+      }
+    }
     const [result, error] = await handlePromise(this.coursesService.create(createDto, userId));
     if (error) throw error;
     return result;
@@ -27,8 +48,8 @@ export class CoursesController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all courses (localized)' })
-  async findAll(@Query() paginationDto: PaginationDto) {
-    const [result, error] = await handlePromise(this.coursesService.findAll(paginationDto));
+  async findAll(@Query() filterDto: CourseFilterDto) {
+    const [result, error] = await handlePromise(this.coursesService.findAll(filterDto));
     if (error) throw error;
     return result;
   }
@@ -47,12 +68,28 @@ export class CoursesController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update a course and its translations' })
   @ApiParam({ name: 'id', description: 'UUID of the course' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'thumbnail', maxCount: 1 },
+      { name: 'image', maxCount: 1 },
+    ], getMulterOptions('image', 'courses')),
+  )
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateDto: UpdateCourseDto,
     @Request() req,
+    @UploadedFiles() files: { thumbnail?: Express.Multer.File[]; image?: Express.Multer.File[] },
   ) {
     const userId = req.user.id;
+    if (files) {
+      if (files.thumbnail && files.thumbnail.length > 0) {
+        updateDto.thumbnail = `/uploads/images/courses/${files.thumbnail[0].filename}`;
+      }
+      if (files.image && files.image.length > 0) {
+        updateDto.image = `/uploads/images/courses/${files.image[0].filename}`;
+      }
+    }
     const [result, error] = await handlePromise(this.coursesService.update(id, updateDto, userId));
     if (error) throw error;
     return result;

@@ -1,5 +1,19 @@
-import { IsUUID, IsNumber, IsString, IsOptional, Min, Max } from 'class-validator';
+import { IsUUID, IsNumber, IsString, IsOptional, Min, Max, IsArray, ValidateNested, IsIn, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+
+export class CourseRatingTranslationInputDto {
+  @ApiProperty({ description: 'Language code (e.g. en, hi)', example: 'en' })
+  @IsString()
+  @IsNotEmpty()
+  @IsIn(['en', 'hi'])
+  languageCode!: string;
+
+  @ApiProperty({ description: 'Review translation text' })
+  @IsString()
+  @IsNotEmpty()
+  review!: string;
+}
 
 export class CreateRatingDto {
   @ApiProperty({ description: 'UUID of the course being rated' })
@@ -12,8 +26,14 @@ export class CreateRatingDto {
   @Max(5)
   rating!: number;
 
-  @ApiProperty({ description: 'Review text/comment', required: false })
-  @IsString()
+  @ApiProperty({
+    description: 'Translations list for the review',
+    type: [CourseRatingTranslationInputDto],
+    required: false,
+  })
+  @IsArray()
   @IsOptional()
-  review?: string;
+  @ValidateNested({ each: true })
+  @Type(() => CourseRatingTranslationInputDto)
+  translations?: CourseRatingTranslationInputDto[];
 }

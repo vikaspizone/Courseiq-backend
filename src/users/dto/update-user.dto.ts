@@ -1,6 +1,8 @@
 import { IsString, IsEmail, IsOptional, IsEnum, IsBoolean, IsNumber, IsUUID, MinLength, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { trans } from '../../utils/trans';
+import { transformJson } from './create-user.dto';
 
 export class UpdateUserDto {
   @ApiProperty({
@@ -37,12 +39,13 @@ export class UpdateUserDto {
   gender?: string;
 
   @ApiProperty({
-    description: 'Profile image URL',
+    description: 'Profile image file to upload',
+    type: 'string',
+    format: 'binary',
     required: false,
   })
-  @IsString()
   @IsOptional()
-  profile_image?: string;
+  profile_image?: any;
 
 
 
@@ -68,6 +71,11 @@ export class UpdateUserDto {
   })
   @IsBoolean()
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return value;
+  })
   is_active?: boolean;
 
   @ApiProperty({
@@ -76,6 +84,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => transformJson(value))
   qualification?: any;
 
   @ApiProperty({
@@ -84,6 +93,9 @@ export class UpdateUserDto {
   })
   @IsNumber({}, { message: () => trans('user.experience_invalid') })
   @IsOptional()
+  @Transform(({ value }) => {
+    return value !== undefined && value !== null ? Number(value) : value;
+  })
   experience?: number;
 
   @ApiProperty({
@@ -92,6 +104,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => transformJson(value))
   languages?: any;
 
   @ApiProperty({
@@ -100,6 +113,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => transformJson(value))
   address?: any;
 
   @ApiProperty({
@@ -108,6 +122,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => transformJson(value))
   work?: any;
 
   @ApiProperty({

@@ -70,20 +70,30 @@ export class CourseCategoriesService {
   }
 
   // Get all categories, localized to the current requested language
-  async findAll(options: { page?: number; limit?: number }): Promise<any> {
+  async findAll(options: { page?: number; limit?: number; search?: string }): Promise<any> {
     const page = Math.max(1, Number(options.page || 1));
     const limit = Math.max(1, Number(options.limit || 10));
     const skip = (page - 1) * limit;
 
-    const [items, totalItems] = await this.categoryRepository.findAndCount({
-      relations: {
-        translations: {
-          language: true,
-        },
-      },
-      skip,
-      take: limit,
-    });
+    const queryBuilder = this.categoryRepository.createQueryBuilder('category')
+      .leftJoinAndSelect('category.translations', 'translation')
+      .leftJoinAndSelect('translation.language', 'language')
+      .leftJoinAndSelect('category.parent', 'parent')
+      .leftJoinAndSelect('parent.translations', 'parentTranslation')
+      .leftJoinAndSelect('parentTranslation.language', 'parentLanguage')
+      .orderBy('category.created_at', 'DESC');
+
+    if (options.search) {
+      queryBuilder.andWhere(
+        '(LOWER(translation.title) LIKE LOWER(:search) OR LOWER(translation.description) LIKE LOWER(:search))',
+        { search: `%${options.search}%` },
+      );
+    }
+
+    const [items, totalItems] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
 
     const locale = localeStorage.getStore() || 'en';
     const mappedItems = items.map((cat) => {
@@ -97,11 +107,33 @@ export class CourseCategoriesService {
         translation = cat.translations[0];
       }
 
+      let parentData: any = null;
+      if (cat.parent) {
+        let parentTranslation = cat.parent.translations?.find((t) => t.language.code === locale);
+        if (!parentTranslation && locale !== 'en') {
+          parentTranslation = cat.parent.translations?.find((t) => t.language.code === 'en');
+        }
+        if (!parentTranslation && cat.parent.translations?.length > 0) {
+          parentTranslation = cat.parent.translations[0];
+        }
+        parentData = {
+          id: cat.parent.id,
+          is_active: cat.parent.is_active,
+          parent_id: cat.parent.parent_id,
+          created_by: cat.parent.created_by,
+          title: parentTranslation ? parentTranslation.title : '',
+          name: parentTranslation ? parentTranslation.title : '',
+          created_at: cat.parent.created_at,
+          updated_at: cat.parent.updated_at,
+        };
+      }
+
       return {
         id: cat.id,
         is_active: cat.is_active,
         parent_id: cat.parent_id,
         created_by: cat.created_by,
+        parent: parentData,
         title: translation ? translation.title : '',
         description: translation ? translation.description : '',
         created_at: cat.created_at,
@@ -133,7 +165,11 @@ export class CourseCategoriesService {
         translations: {
           language: true,
         },
-        parent: true,
+        parent: {
+          translations: {
+            language: true,
+          },
+        },
       },
     });
 
@@ -157,15 +193,35 @@ export class CourseCategoriesService {
       translation = cat.translations[0];
     }
 
+    let parentData: any = null;
+    if (cat.parent) {
+      let parentTranslation = cat.parent.translations?.find((t) => t.language.code === locale);
+      if (!parentTranslation && locale !== 'en') {
+        parentTranslation = cat.parent.translations?.find((t) => t.language.code === 'en');
+      }
+      if (!parentTranslation && cat.parent.translations?.length > 0) {
+        parentTranslation = cat.parent.translations[0];
+      }
+      parentData = {
+        id: cat.parent.id,
+        is_active: cat.parent.is_active,
+        parent_id: cat.parent.parent_id,
+        created_by: cat.parent.created_by,
+        title: parentTranslation ? parentTranslation.title : '',
+        name: parentTranslation ? parentTranslation.title : '',
+        created_at: cat.parent.created_at,
+        updated_at: cat.parent.updated_at,
+      };
+    }
+
     return {
        id: cat.id,
        is_active: cat.is_active,
        parent_id: cat.parent_id,
        created_by: cat.created_by,
-       parent: cat.parent,
+       parent: parentData,
        title: translation ? translation.title : '',
        description: translation ? translation.description : '',
-       translations: cat.translations,
        created_at: cat.created_at,
        updated_at: cat.updated_at,
      };

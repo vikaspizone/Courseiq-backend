@@ -52,18 +52,25 @@ export class CourseRatingsService {
 
     const saved = await this.ratingRepository.save(rating);
 
-    if (createDto.review) {
-      let translation = rating.translations?.find((t) => t.language_id === lang.id);
-      if (translation) {
-        translation.review = createDto.review;
-        await this.translationRepository.save(translation);
-      } else {
-        const newTranslation = this.translationRepository.create({
-          course_rating_id: saved.id,
-          language_id: lang.id,
-          review: createDto.review,
+    if (createDto.translations && createDto.translations.length > 0) {
+      for (const tDto of createDto.translations) {
+        const tLang = await this.languageRepository.findOne({
+          where: { code: tDto.languageCode },
         });
-        await this.translationRepository.save(newTranslation);
+        if (tLang) {
+          let translation = rating.translations?.find((t) => t.language_id === tLang.id);
+          if (translation) {
+            translation.review = tDto.review;
+            await this.translationRepository.save(translation);
+          } else {
+            const newTranslation = this.translationRepository.create({
+              course_rating_id: saved.id,
+              language_id: tLang.id,
+              review: tDto.review,
+            });
+            await this.translationRepository.save(newTranslation);
+          }
+        }
       }
     }
 
@@ -72,9 +79,27 @@ export class CourseRatingsService {
       relations: { translations: { language: true } },
     });
 
+    let reloadedTranslation = reloaded?.translations?.find((t) => t.language.code === locale);
+    if (!reloadedTranslation && locale !== 'en') {
+      reloadedTranslation = reloaded?.translations?.find((t) => t.language.code === 'en');
+    }
+    if (!reloadedTranslation && reloaded?.translations && reloaded.translations.length > 0) {
+      reloadedTranslation = reloaded.translations[0];
+    }
+
+    const mappedData = reloaded ? {
+      id: reloaded.id,
+      course_id: reloaded.course_id,
+      user_id: reloaded.user_id,
+      rating: reloaded.rating,
+      review: reloadedTranslation ? reloadedTranslation.review : '',
+      created_at: reloaded.created_at,
+      updated_at: reloaded.updated_at,
+    } : null;
+
     return {
       message,
-      data: reloaded,
+      data: mappedData,
     };
   }
 
@@ -106,14 +131,20 @@ export class CourseRatingsService {
         translation = rating.translations[0];
       }
 
+      const userData = rating.user ? {
+        id: rating.user.id,
+        name: rating.user.name,
+        email: rating.user.email,
+        phone: rating.user.phone,
+      } : null;
+
       return {
         id: rating.id,
         course_id: rating.course_id,
         user_id: rating.user_id,
         rating: rating.rating,
         review: translation ? translation.review : '',
-        user: rating.user,
-        translations: rating.translations,
+        user: userData,
         created_at: rating.created_at,
         updated_at: rating.updated_at,
       };

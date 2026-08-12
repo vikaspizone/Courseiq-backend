@@ -1,6 +1,21 @@
 import { IsNotEmpty, IsString, IsEmail, IsOptional, IsEnum, IsBoolean, IsNumber, IsUUID, MinLength, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { trans } from '../../utils/trans';
+
+export function transformJson(value: any) {
+  if (value === undefined || value === null) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }
+  return value;
+}
 
 export class CreateUserDto {
   @ApiProperty({
@@ -35,12 +50,13 @@ export class CreateUserDto {
   gender?: string;
 
   @ApiProperty({
-    description: 'Profile image URL',
+    description: 'Profile image file to upload',
+    type: 'string',
+    format: 'binary',
     required: false,
   })
-  @IsString()
   @IsOptional()
-  profile_image?: string;
+  profile_image?: any;
 
   @ApiProperty({
     description: trans('auth.swagger_password_desc'),
@@ -74,6 +90,11 @@ export class CreateUserDto {
   })
   @IsBoolean()
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return value;
+  })
   is_active?: boolean;
 
   @ApiProperty({
@@ -82,6 +103,7 @@ export class CreateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => transformJson(value))
   qualification?: any;
 
   @ApiProperty({
@@ -90,6 +112,9 @@ export class CreateUserDto {
   })
   @IsNumber({}, { message: () => trans('user.experience_invalid') })
   @IsOptional()
+  @Transform(({ value }) => {
+    return value !== undefined && value !== null ? Number(value) : value;
+  })
   experience?: number;
 
   @ApiProperty({
@@ -98,6 +123,7 @@ export class CreateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => transformJson(value))
   languages?: any;
 
   @ApiProperty({
@@ -106,6 +132,7 @@ export class CreateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => transformJson(value))
   address?: any;
 
   @ApiProperty({
@@ -114,6 +141,7 @@ export class CreateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => transformJson(value))
   work?: any;
 
   @ApiProperty({
