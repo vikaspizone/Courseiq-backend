@@ -12,9 +12,23 @@ export const getMulterOptions = (type: 'image' | 'video' | 'any', moduleName: st
   return {
     storage: diskStorage({
       destination: (req, file, callback) => {
-        const subfolder = type === 'image' ? 'images' : type === 'video' ? 'videos' : 'files';
-        const uploadDir = join(process.cwd(), 'uploads', subfolder, moduleName);
+        // Determine type folder based on mimetype
+        let subfolder = 'document';
+        if (file.mimetype.startsWith('image/')) {
+          subfolder = 'images';
+        } else if (file.mimetype.startsWith('video/')) {
+          subfolder = 'video';
+        }
 
+        // Normalize module name (singularized folder paths)
+        let normalizedModule = moduleName.toLowerCase();
+        if (normalizedModule.includes('course')) {
+          normalizedModule = 'course';
+        } else if (normalizedModule.includes('user')) {
+          normalizedModule = 'user';
+        }
+
+        const uploadDir = join(process.cwd(), 'uploads', subfolder, normalizedModule);
         if (!existsSync(uploadDir)) {
           mkdirSync(uploadDir, { recursive: true });
         }

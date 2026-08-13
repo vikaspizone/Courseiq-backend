@@ -51,7 +51,6 @@ export class CoursesService {
       level: createDto.level,
       slug: createDto.slug,
       thumbnail: createDto.thumbnail || null,
-      image: createDto.image || null,
       language: createDto.language || null,
       topics: createDto.topics || null,
       status: createDto.status || CourseStatus.DRAFT,
@@ -120,7 +119,9 @@ export class CoursesService {
       .leftJoinAndSelect('course.category', 'category')
       .leftJoinAndSelect('category.translations', 'categoryTranslation')
       .leftJoinAndSelect('categoryTranslation.language', 'categoryLanguage')
-      .leftJoinAndSelect('course.prices', 'prices');
+      .leftJoinAndSelect('course.prices', 'prices')
+      .leftJoinAndSelect('course.media', 'media')
+      .leftJoinAndSelect('course.ratings', 'ratings');
 
     if (options.search) {
       queryBuilder.andWhere(
@@ -226,6 +227,10 @@ export class CoursesService {
         };
       }
 
+      const ratings = course.ratings || [];
+      const totalRatings = ratings.length;
+      const averageRating = totalRatings > 0 ? ratings.reduce((sum, r) => sum + Number(r.rating), 0) / totalRatings : 0;
+
       return {
         id: course.id,
         category_id: course.category_id,
@@ -233,7 +238,7 @@ export class CoursesService {
         level: course.level,
         slug: course.slug,
         thumbnail: course.thumbnail,
-        image: course.image,
+        media: course.media || [],
         language: course.language,
         topics: course.topics,
         status: course.status,
@@ -244,6 +249,8 @@ export class CoursesService {
         overview: translation ? translation.overview : '',
         category: categoryData,
         price: course.prices && course.prices.length > 0 ? course.prices[0] : null,
+        average_rating: Number(averageRating.toFixed(1)),
+        total_ratings: totalRatings,
         created_at: course.created_at,
         updated_at: course.updated_at,
       };
@@ -281,6 +288,8 @@ export class CoursesService {
         creator: true,
         updater: true,
         prices: true,
+        media: true,
+        ratings: true,
       },
     });
 
@@ -325,6 +334,10 @@ export class CoursesService {
       };
     }
 
+    const ratings = course.ratings || [];
+    const totalRatings = ratings.length;
+    const averageRating = totalRatings > 0 ? ratings.reduce((sum, r) => sum + Number(r.rating), 0) / totalRatings : 0;
+
     return {
       id: course.id,
       category_id: course.category_id,
@@ -332,7 +345,7 @@ export class CoursesService {
       level: course.level,
       slug: course.slug,
       thumbnail: course.thumbnail,
-      image: course.image,
+      media: course.media || [],
       language: course.language,
       topics: course.topics,
       status: course.status,
@@ -343,6 +356,8 @@ export class CoursesService {
       overview: translation ? translation.overview : '',
       category: categoryData,
       price: course.prices && course.prices.length > 0 ? course.prices[0] : null,
+      average_rating: Number(averageRating.toFixed(1)),
+      total_ratings: totalRatings,
       created_at: course.created_at,
       updated_at: course.updated_at,
     };
@@ -378,7 +393,6 @@ export class CoursesService {
     if (updateDto.type !== undefined) course.type = updateDto.type;
     if (updateDto.level !== undefined) course.level = updateDto.level;
     if (updateDto.thumbnail !== undefined) course.thumbnail = updateDto.thumbnail;
-    if (updateDto.image !== undefined) course.image = updateDto.image;
     if (updateDto.language !== undefined) course.language = updateDto.language;
     if (updateDto.topics !== undefined) course.topics = updateDto.topics;
     if (updateDto.status !== undefined) course.status = updateDto.status;

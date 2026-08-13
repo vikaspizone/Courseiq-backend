@@ -23,21 +23,17 @@ export class CoursesController {
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'thumbnail', maxCount: 1 },
-      { name: 'image', maxCount: 1 },
     ], getMulterOptions('image', 'courses')),
   )
   async create(
     @Body() createDto: CreateCourseDto,
     @Request() req,
-    @UploadedFiles() files: { thumbnail?: Express.Multer.File[]; image?: Express.Multer.File[] },
+    @UploadedFiles() files: { thumbnail?: Express.Multer.File[] },
   ) {
     const userId = req.user.id;
     if (files) {
       if (files.thumbnail && files.thumbnail.length > 0) {
         createDto.thumbnail = `/uploads/images/courses/${files.thumbnail[0].filename}`;
-      }
-      if (files.image && files.image.length > 0) {
-        createDto.image = `/uploads/images/courses/${files.image[0].filename}`;
       }
     }
     const [result, error] = await handlePromise(this.coursesService.create(createDto, userId));
@@ -72,22 +68,18 @@ export class CoursesController {
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'thumbnail', maxCount: 1 },
-      { name: 'image', maxCount: 1 },
     ], getMulterOptions('image', 'courses')),
   )
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateDto: UpdateCourseDto,
     @Request() req,
-    @UploadedFiles() files: { thumbnail?: Express.Multer.File[]; image?: Express.Multer.File[] },
+    @UploadedFiles() files: { thumbnail?: Express.Multer.File[] },
   ) {
     const userId = req.user.id;
     if (files) {
       if (files.thumbnail && files.thumbnail.length > 0) {
         updateDto.thumbnail = `/uploads/images/courses/${files.thumbnail[0].filename}`;
-      }
-      if (files.image && files.image.length > 0) {
-        updateDto.image = `/uploads/images/courses/${files.image[0].filename}`;
       }
     }
     const [result, error] = await handlePromise(this.coursesService.update(id, updateDto, userId));

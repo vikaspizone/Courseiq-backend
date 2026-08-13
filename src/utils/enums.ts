@@ -27,3 +27,10 @@ export enum DiscountType {
   PERCENTAGE = 'percentage',
 }
 
+export enum CourseMediaType {
+  IMAGE = 'image',
+  VIDEO = 'video',
+  DOCUMENT = 'document',
+}
+
+

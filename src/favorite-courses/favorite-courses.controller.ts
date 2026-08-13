@@ -42,8 +42,9 @@ export class FavoriteCoursesController {
   @ApiOperation({ summary: 'Get all favorite courses of the authenticated user' })
   async getFavorites(@Query() paginationDto: PaginationDto, @Request() req) {
     const userId = req.user.id;
+    const userRole = req.user.role?.name || '';
     const [result, error] = await handlePromise(
-      this.favoriteCoursesService.getFavorites(paginationDto, userId),
+      this.favoriteCoursesService.getFavorites(paginationDto, userId, userRole),
     );
     if (error) throw error;
     return result;

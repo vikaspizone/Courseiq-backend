@@ -1,14 +1,26 @@
-import { Controller, Get, Post, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Request } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Request, Query } from '@nestjs/common';
 import { CourseRatingsService } from './course-ratings.service';
 import { CreateRatingDto } from './dto/create-rating.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { handlePromise } from '../utils/async-handler';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Course Ratings')
 @ApiBearerAuth('JWT-auth')
 @Controller('course-ratings')
 export class CourseRatingsController {
   constructor(private readonly courseRatingsService: CourseRatingsService) {}
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all course ratings/reviews' })
+  async getRatings(@Query() paginationDto: PaginationDto) {
+    const [result, error] = await handlePromise(
+      this.courseRatingsService.getRatings(paginationDto),
+    );
+    if (error) throw error;
+    return result;
+  }
 
   @Post()
   @HttpCode(HttpStatus.OK)

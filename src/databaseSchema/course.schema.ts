@@ -2,6 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { CourseCategory } from './course-category.schema';
 import { CourseTranslation } from './course-translation.schema';
 import { CoursePrice } from './course-price.schema';
+import { CourseMedia } from './course-media.schema';
+import { CourseRating } from './course-rating.schema';
 import { User } from './user.schema';
 import { CourseType, CourseLevel, CourseStatus } from '../utils/enums';
 
@@ -28,9 +30,6 @@ export class Course {
 
   @Column({ type: 'varchar', length: 500, nullable: true })
   thumbnail!: string | null;
-
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  image!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   language!: string | null;
@@ -60,6 +59,12 @@ export class Course {
 
   @OneToMany(() => CoursePrice, (price) => price.course, { cascade: true })
   prices!: CoursePrice[];
+
+  @OneToMany(() => CourseMedia, (media) => media.course, { cascade: true })
+  media!: CourseMedia[];
+
+  @OneToMany(() => CourseRating, (rating) => rating.course)
+  ratings!: CourseRating[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   created_at!: Date;

@@ -134,4 +134,11 @@ export default {
     invalid_rating: 'Rating must be between 1 and 5.',
     unauthorized_delete: 'You are not authorized to delete this rating.',
   },
+  media: {
+    not_found: 'Course media not found.',
+    created: 'Course media uploaded successfully.',
+    updated: 'Course media updated successfully.',
+    deleted: 'Course media successfully deleted and re-indexed.',
+    file_required: 'File is required.',
+  },
 };

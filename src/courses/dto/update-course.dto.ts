@@ -50,15 +50,6 @@ export class UpdateCourseDto {
   thumbnail?: any;
 
   @ApiProperty({
-    description: 'Course image file to upload',
-    type: 'string',
-    format: 'binary',
-    required: false,
-  })
-  @IsOptional()
-  image?: any;
-
-  @ApiProperty({
     description: 'Course primary language name',
     required: false,
   })

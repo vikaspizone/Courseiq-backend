@@ -53,18 +53,22 @@ export class FavoriteCoursesService {
     };
   }
 
-  async getFavorites(options: { page?: number; limit?: number }, userId: string): Promise<any> {
+  async getFavorites(options: { page?: number; limit?: number }, userId: string, userRole: string): Promise<any> {
     const page = Math.max(1, Number(options.page || 1));
     const limit = Math.max(1, Number(options.limit || 10));
     const skip = (page - 1) * limit;
 
+    const whereClause = userRole === 'admin' ? {} : { user_id: userId };
+
     const [items, totalItems] = await this.favoriteCourseRepository.findAndCount({
-      where: { user_id: userId },
+      where: whereClause,
       relations: {
+        user: true,
         course: {
           translations: {
             language: true,
           },
+          media: true,
         },
       },
       skip,
@@ -95,7 +99,7 @@ export class FavoriteCoursesService {
         level: course.level,
         slug: course.slug,
         thumbnail: course.thumbnail,
-        image: course.image,
+        media: course.media || [],
         language: course.language,
         topics: course.topics,
         status: course.status,
@@ -108,10 +112,18 @@ export class FavoriteCoursesService {
         updated_at: course.updated_at,
       };
 
+      const userData = fav.user ? {
+        id: fav.user.id,
+        name: fav.user.name,
+        email: fav.user.email,
+        phone: fav.user.phone,
+      } : null;
+
       return {
         id: fav.id,
         user_id: fav.user_id,
         course_id: fav.course_id,
+        user: userData,
         created_at: fav.created_at,
         course: localizedCourse,
       };
