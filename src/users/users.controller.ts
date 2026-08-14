@@ -4,7 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiConsumes } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { handlePromise } from '../utils/async-handler';
+import { handlePromise, cleanUndefined } from '../utils/async-handler';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { getMulterOptions } from '../config/multer.config';
 
@@ -68,7 +68,8 @@ export class UsersController {
     if (file) {
       updateUserDto.profile_image = `/uploads/images/user/${file.filename}`;
     }
-    const [result, error] = await handlePromise(this.usersService.updateUser(id, updateUserDto, currentUserId));
+    const cleanedDto = cleanUndefined(updateUserDto);
+    const [result, error] = await handlePromise(this.usersService.updateUser(id, cleanedDto, currentUserId));
     if (error) throw error;
     return result;
   }

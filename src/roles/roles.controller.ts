@@ -3,7 +3,7 @@ import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { handlePromise } from '../utils/async-handler';
+import { handlePromise, cleanUndefined } from '../utils/async-handler';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
@@ -50,7 +50,8 @@ export class RolesController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateRoleDto: UpdateRoleDto,
   ) {
-    const [result, error] = await handlePromise(this.rolesService.update(id, updateRoleDto));
+    const cleanedDto = cleanUndefined(updateRoleDto);
+    const [result, error] = await handlePromise(this.rolesService.update(id, cleanedDto));
     if (error) throw error;
     return result;
   }

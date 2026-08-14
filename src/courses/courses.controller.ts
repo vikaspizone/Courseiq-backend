@@ -5,7 +5,7 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { CourseFilterDto } from './dto/course-filter.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiConsumes } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { handlePromise } from '../utils/async-handler';
+import { handlePromise, cleanUndefined } from '../utils/async-handler';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { getMulterOptions } from '../config/multer.config';
 
@@ -31,12 +31,13 @@ export class CoursesController {
     @UploadedFiles() files: { thumbnail?: Express.Multer.File[] },
   ) {
     const userId = req.user.id;
+    const userRole = req.user.role?.name;
     if (files) {
       if (files.thumbnail && files.thumbnail.length > 0) {
-        createDto.thumbnail = `/uploads/images/courses/${files.thumbnail[0].filename}`;
+        createDto.thumbnail = `/uploads/images/course/${files.thumbnail[0].filename}`;
       }
     }
-    const [result, error] = await handlePromise(this.coursesService.create(createDto, userId));
+    const [result, error] = await handlePromise(this.coursesService.create(createDto, userId, userRole));
     if (error) throw error;
     return result;
   }
@@ -79,10 +80,11 @@ export class CoursesController {
     const userId = req.user.id;
     if (files) {
       if (files.thumbnail && files.thumbnail.length > 0) {
-        updateDto.thumbnail = `/uploads/images/courses/${files.thumbnail[0].filename}`;
+        updateDto.thumbnail = `/uploads/images/course/${files.thumbnail[0].filename}`;
       }
     }
-    const [result, error] = await handlePromise(this.coursesService.update(id, updateDto, userId));
+    const cleanedDto = cleanUndefined(updateDto);
+    const [result, error] = await handlePromise(this.coursesService.update(id, cleanedDto, userId));
     if (error) throw error;
     return result;
   }

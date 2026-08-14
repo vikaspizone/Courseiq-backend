@@ -3,7 +3,7 @@ import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { handlePromise } from '../utils/async-handler';
+import { handlePromise, cleanUndefined } from '../utils/async-handler';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Permissions')
@@ -48,7 +48,8 @@ export class PermissionsController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updatePermissionDto: UpdatePermissionDto,
   ) {
-    const [result, error] = await handlePromise(this.permissionsService.update(id, updatePermissionDto));
+    const cleanedDto = cleanUndefined(updatePermissionDto);
+    const [result, error] = await handlePromise(this.permissionsService.update(id, cleanedDto));
     if (error) throw error;
     return result;
   }

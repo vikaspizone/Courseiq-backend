@@ -3,7 +3,7 @@ import { RolePermissionsService } from './role-permissions.service';
 import { CreateRolePermissionDto } from './dto/create-role-permission.dto';
 import { UpdateRolePermissionDto } from './dto/update-role-permission.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { handlePromise } from '../utils/async-handler';
+import { handlePromise, cleanUndefined } from '../utils/async-handler';
 
 @ApiTags('Role Permissions')
 @ApiBearerAuth('JWT-auth')
@@ -48,7 +48,8 @@ export class RolePermissionsController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateRolePermissionDto: UpdateRolePermissionDto,
   ) {
-    const [result, error] = await handlePromise(this.rolePermissionsService.update(id, updateRolePermissionDto));
+    const cleanedDto = cleanUndefined(updateRolePermissionDto);
+    const [result, error] = await handlePromise(this.rolePermissionsService.update(id, cleanedDto));
     if (error) throw error;
     return result;
   }

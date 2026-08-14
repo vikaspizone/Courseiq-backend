@@ -141,4 +141,14 @@ export default {
     deleted: 'Course media successfully deleted and re-indexed.',
     file_required: 'File is required.',
   },
+  course_instructor: {
+    created: 'Course instructor assigned successfully.',
+    updated: 'Course instructor assignment updated successfully.',
+    deleted: 'Course instructor assignment removed successfully.',
+    not_found: 'Course instructor mapping not found.',
+    already_assigned: 'Instructor is already assigned to this course.',
+    primary_exists: 'A primary instructor already exists for this course.',
+    instructor_not_found: 'Instructor user not found.',
+  },
 };
+

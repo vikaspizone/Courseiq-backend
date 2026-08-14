@@ -3,7 +3,7 @@ import { ModulesService } from './modules.service';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { handlePromise } from '../utils/async-handler';
+import { handlePromise, cleanUndefined } from '../utils/async-handler';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Modules')
@@ -48,7 +48,8 @@ export class ModulesController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateModuleDto: UpdateModuleDto,
   ) {
-    const [result, error] = await handlePromise(this.modulesService.update(id, updateModuleDto));
+    const cleanedDto = cleanUndefined(updateModuleDto);
+    const [result, error] = await handlePromise(this.modulesService.update(id, cleanedDto));
     if (error) throw error;
     return result;
   }

@@ -6,6 +6,7 @@ import { CourseTranslation } from '../databaseSchema/course-translation.schema';
 import { CourseCategory } from '../databaseSchema/course-category.schema';
 import { Language } from '../databaseSchema/language.schema';
 import { CoursePrice } from '../databaseSchema/course-price.schema';
+import { CourseInstructor } from '../databaseSchema/course-instructor.schema';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CourseFilterDto } from './dto/course-filter.dto';
@@ -26,10 +27,12 @@ export class CoursesService {
     private readonly languageRepository: Repository<Language>,
     @InjectRepository(CoursePrice)
     private readonly priceRepository: Repository<CoursePrice>,
+    @InjectRepository(CourseInstructor)
+    private readonly courseInstructorRepository: Repository<CourseInstructor>,
   ) {}
 
   // Create a new course with translations
-  async create(createDto: CreateCourseDto, userId: string): Promise<{ message: string; data: Course }> {
+  async create(createDto: CreateCourseDto, userId: string, userRole?: string): Promise<{ message: string; data: Course }> {
 
     const categoryExists = await this.categoryRepository.findOne({
       where: { id: createDto.category_id },
@@ -58,6 +61,18 @@ export class CoursesService {
     });
 
     const savedCourse = await this.courseRepository.save(course);
+
+    // Auto-link instructor if user role is instructor
+    if (userRole === 'instructor') {
+      const courseInstructor = this.courseInstructorRepository.create({
+        course_id: savedCourse.id,
+        instructor_id: userId,
+        is_primary: true,
+        is_active: true,
+        created_by: userId,
+      });
+      await this.courseInstructorRepository.save(courseInstructor);
+    }
 
     const translations: CourseTranslation[] = [];
     for (const tDto of createDto.translations) {
@@ -121,7 +136,9 @@ export class CoursesService {
       .leftJoinAndSelect('categoryTranslation.language', 'categoryLanguage')
       .leftJoinAndSelect('course.prices', 'prices')
       .leftJoinAndSelect('course.media', 'media')
-      .leftJoinAndSelect('course.ratings', 'ratings');
+      .leftJoinAndSelect('course.ratings', 'ratings')
+      .leftJoinAndSelect('course.instructors', 'instructors')
+      .leftJoinAndSelect('instructors.instructor', 'instructorUser');
 
     if (options.search) {
       queryBuilder.andWhere(
@@ -251,6 +268,15 @@ export class CoursesService {
         price: course.prices && course.prices.length > 0 ? course.prices[0] : null,
         average_rating: Number(averageRating.toFixed(1)),
         total_ratings: totalRatings,
+        instructors: course.instructors ? course.instructors.map(ci => ({
+          id: ci.id,
+          instructor_id: ci.instructor_id,
+          is_primary: ci.is_primary,
+          is_active: ci.is_active,
+          name: ci.instructor?.name,
+          email: ci.instructor?.email,
+          profile_image: ci.instructor?.profile_image,
+        })) : [],
         created_at: course.created_at,
         updated_at: course.updated_at,
       };
@@ -290,6 +316,9 @@ export class CoursesService {
         prices: true,
         media: true,
         ratings: true,
+        instructors: {
+          instructor: true,
+        },
       },
     });
 
@@ -358,6 +387,15 @@ export class CoursesService {
       price: course.prices && course.prices.length > 0 ? course.prices[0] : null,
       average_rating: Number(averageRating.toFixed(1)),
       total_ratings: totalRatings,
+      instructors: course.instructors ? course.instructors.map(ci => ({
+        id: ci.id,
+        instructor_id: ci.instructor_id,
+        is_primary: ci.is_primary,
+        is_active: ci.is_active,
+        name: ci.instructor?.name,
+        email: ci.instructor?.email,
+        profile_image: ci.instructor?.profile_image,
+      })) : [],
       created_at: course.created_at,
       updated_at: course.updated_at,
     };

@@ -4,6 +4,7 @@ import { CourseTranslation } from './course-translation.schema';
 import { CoursePrice } from './course-price.schema';
 import { CourseMedia } from './course-media.schema';
 import { CourseRating } from './course-rating.schema';
+import { CourseInstructor } from './course-instructor.schema';
 import { User } from './user.schema';
 import { CourseType, CourseLevel, CourseStatus } from '../utils/enums';
 
@@ -65,6 +66,9 @@ export class Course {
 
   @OneToMany(() => CourseRating, (rating) => rating.course)
   ratings!: CourseRating[];
+
+  @OneToMany(() => CourseInstructor, (instructor) => instructor.course, { cascade: true })
+  instructors!: CourseInstructor[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   created_at!: Date;

@@ -10,6 +10,7 @@ export class UpdateCourseDto {
     description: 'Category ID of the course',
     required: false,
   })
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsUUID('4', { message: () => trans('course.category_not_found') })
   @IsOptional()
   category_id?: string;
@@ -19,6 +20,7 @@ export class UpdateCourseDto {
     enum: CourseType,
     required: false,
   })
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsEnum(CourseType, { message: () => trans('course.type_invalid') })
   @IsOptional()
   type?: CourseType;
@@ -28,6 +30,7 @@ export class UpdateCourseDto {
     enum: CourseLevel,
     required: false,
   })
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsEnum(CourseLevel, { message: () => trans('course.level_invalid') })
   @IsOptional()
   level?: CourseLevel;
@@ -36,6 +39,7 @@ export class UpdateCourseDto {
     description: 'Unique course slug',
     required: false,
   })
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
   @IsOptional()
   slug?: string;
@@ -46,6 +50,7 @@ export class UpdateCourseDto {
     format: 'binary',
     required: false,
   })
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsOptional()
   thumbnail?: any;
 
@@ -53,6 +58,7 @@ export class UpdateCourseDto {
     description: 'Course primary language name',
     required: false,
   })
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
   @IsOptional()
   language?: string;
@@ -61,16 +67,19 @@ export class UpdateCourseDto {
     description: 'List of topics or tags associated with the course',
     required: false,
   })
+  @Transform(({ value }) => {
+    if (value === '') return undefined;
+    return transformJson(value);
+  })
   @IsOptional()
-  @Transform(({ value }) => transformJson(value))
   topics?: any;
-
 
   @ApiProperty({
     description: 'Course status',
     enum: CourseStatus,
     required: false,
   })
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsEnum(CourseStatus, { message: () => trans('course.status_invalid') })
   @IsOptional()
   status?: CourseStatus;
@@ -80,7 +89,10 @@ export class UpdateCourseDto {
     type: [CourseTranslationInputDto],
     required: false,
   })
-  @Transform(({ value }) => transformJsonArray(value, CourseTranslationInputDto))
+  @Transform(({ value }) => {
+    if (value === '') return undefined;
+    return transformJsonArray(value, CourseTranslationInputDto);
+  })
   @IsArray({ message: 'Translations must be an array' })
   @IsOptional()
   @ValidateNested({ each: true })
@@ -93,7 +105,7 @@ export class UpdateCourseDto {
     required: false,
   })
   @Transform(({ value }) => {
-    if (value === undefined || value === null) return value;
+    if (value === '' || value === undefined || value === null) return undefined;
     if (typeof value === 'string') {
       try {
         return plainToInstance(CoursePriceInputDto, JSON.parse(value));

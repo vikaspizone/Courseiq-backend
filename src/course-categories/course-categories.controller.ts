@@ -3,7 +3,7 @@ import { CourseCategoriesService } from './course-categories.service';
 import { CreateCourseCategoryDto } from './dto/create-course-category.dto';
 import { UpdateCourseCategoryDto } from './dto/update-course-category.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { handlePromise } from '../utils/async-handler';
+import { handlePromise, cleanUndefined } from '../utils/async-handler';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Course Categories')
@@ -49,7 +49,8 @@ export class CourseCategoriesController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateDto: UpdateCourseCategoryDto,
   ) {
-    const [result, error] = await handlePromise(this.categoriesService.update(id, updateDto));
+    const cleanedDto = cleanUndefined(updateDto);
+    const [result, error] = await handlePromise(this.categoriesService.update(id, cleanedDto));
     if (error) throw error;
     return result;
   }

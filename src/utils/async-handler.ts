@@ -9,3 +9,17 @@ export async function handlePromise<T>(promise: Promise<T>): Promise<[T | null, 
     return [null, error];
   }
 }
+
+/**
+ * Utility to clean undefined values from an object.
+ */
+export function cleanUndefined<T extends object>(obj: T): T {
+  if (!obj || typeof obj !== 'object') return obj;
+  const cleaned: any = Array.isArray(obj) ? [] : {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+}
