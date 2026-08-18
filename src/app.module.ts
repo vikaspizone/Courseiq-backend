@@ -15,6 +15,8 @@ import { FavoriteCoursesModule } from './favorite-courses/favorite-courses.modul
 import { CourseRatingsModule } from './course-ratings/course-ratings.module';
 import { CourseMediaModule } from './course-media/course-media.module';
 import { CourseInstructorsModule } from './course-instructors/course-instructors.module';
+import { CourseEnrollmentsModule } from './course-enrollments/course-enrollments.module';
+import { CoursePurchasesModule } from './course-purchases/course-purchases.module';
 import databaseConfig from './config/database.config';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { LocaleMiddleware } from './middlewares/locale.middleware';
@@ -47,6 +49,8 @@ import { BlacklistedToken } from './databaseSchema/blacklisted-token.schema';
     CourseRatingsModule,
     CourseMediaModule,
     CourseInstructorsModule,
+    CourseEnrollmentsModule,
+    CoursePurchasesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

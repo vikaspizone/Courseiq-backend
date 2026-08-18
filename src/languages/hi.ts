@@ -87,7 +87,7 @@ export default {
     slug_exists: 'कोर्स का स्लग पहले से मौजूद है।',
     type_invalid: 'कोर्स प्रकार free या paid होना चाहिए।',
     level_invalid: 'कोर्स स्तर beginner, intermediate, या advanced होना चाहिए।',
-    status_invalid: 'कोर्स स्टेटस draft, coming soon, active, या inactive होना चाहिए।',
+    status_invalid: 'कोर्स स्टेटस draft, coming_soon, active, या inactive होना चाहिए।',
   },
   module: {
     not_found: 'मॉड्यूल नहीं मिला।',
@@ -150,5 +150,20 @@ export default {
     primary_exists: 'इस कोर्स के लिए एक प्राथमिक इंस्ट्रक्टर पहले से ही मौजूद है।',
     instructor_not_found: 'इंस्ट्रक्टर उपयोगकर्ता नहीं मिला।',
   },
+  enrollment: {
+    created: 'कोर्स में सफलतापूर्वक नामांकन हो गया है।',
+    updated: 'नामांकन सफलतापूर्वक अपडेट किया गया।',
+    deleted: 'नामांकन सफलतापूर्वक रद्द कर दिया गया।',
+    not_found: 'नामांकन नहीं मिला।',
+    already_enrolled: 'छात्र पहले से ही इस कोर्स में नामांकित है।',
+  },
+  purchase: {
+    created: 'खरीद लेनदेन सफलतापूर्वक दर्ज किया गया।',
+    updated: 'खरीद रिकॉर्ड सफलतापूर्वक अपडेट किया गया।',
+    deleted: 'खरीद रिकॉर्ड सफलतापूर्वक हटा दिया गया।',
+    not_found: 'खरीद लेनदेन नहीं मिला।',
+    price_not_found: 'कोर्स मूल्य आईडी नहीं मिली।',
+  },
 };
+
 

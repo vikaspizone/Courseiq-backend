@@ -69,4 +69,9 @@ export class User {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updated_at!: Date;
+
+  toJSON() {
+    const { password, refresh_token, ...userWithoutSensitiveFields } = this;
+    return userWithoutSensitiveFields;
+  }
 }

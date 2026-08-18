@@ -17,7 +17,7 @@ export enum CourseLevel {
 
 export enum CourseStatus {
   DRAFT = 'draft',
-  COMING_SOON = 'coming soon',
+  COMING_SOON = 'coming_soon',
   ACTIVE = 'active',
   INACTIVE = 'inactive',
 }
@@ -32,5 +32,27 @@ export enum CourseMediaType {
   VIDEO = 'video',
   DOCUMENT = 'document',
 }
+
+export enum EnrollmentStatus {
+  ACTIVE = 'active',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired',
+}
+
+export enum PaymentStatus {
+  PENDING = 'pending',
+  PAID = 'paid',
+  FAILED = 'failed',
+  REFUNDED = 'refunded',
+}
+
+export enum PaymentMethod {
+  UPI = 'upi',
+  CARD = 'card',
+  NET_BANKING = 'net_banking',
+  OTHER = 'other',
+}
+
 
 

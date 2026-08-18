@@ -87,7 +87,7 @@ export default {
     slug_exists: 'Course slug already exists.',
     type_invalid: 'Course type must be either free or paid.',
     level_invalid: 'Course level must be beginner, intermediate, or advanced.',
-    status_invalid: 'Course status must be draft, coming soon, active, or inactive.',
+    status_invalid: 'Course status must be draft, coming_soon, active, or inactive.',
   },
   module: {
     not_found: 'Module not found.',
@@ -150,5 +150,20 @@ export default {
     primary_exists: 'A primary instructor already exists for this course.',
     instructor_not_found: 'Instructor user not found.',
   },
+  enrollment: {
+    created: 'Enrolled in course successfully.',
+    updated: 'Enrollment updated successfully.',
+    deleted: 'Enrollment cancelled successfully.',
+    not_found: 'Enrollment not found.',
+    already_enrolled: 'Student is already enrolled in this course.',
+  },
+  purchase: {
+    created: 'Purchase transaction recorded successfully.',
+    updated: 'Purchase record updated successfully.',
+    deleted: 'Purchase record deleted successfully.',
+    not_found: 'Purchase transaction not found.',
+    price_not_found: 'Course price ID not found.',
+  },
 };
+
 
