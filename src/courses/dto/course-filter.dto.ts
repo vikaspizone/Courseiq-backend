@@ -2,9 +2,17 @@ import { IsOptional, IsString, IsEnum, IsUUID, IsNumber, Min, Max } from 'class-
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../common/dto/pagination.dto';
-import { CourseLevel } from '../../utils/enums';
+import { CourseLevel, CourseType } from '../../utils/enums';
 
 export class CourseFilterDto extends PaginationDto {
+  @ApiPropertyOptional({
+    description: 'Filter by course type (free or paid)',
+    enum: CourseType,
+  })
+  @IsOptional()
+  @IsEnum(CourseType)
+  type?: CourseType;
+
   @ApiPropertyOptional({
     description: 'Filter by category ID',
     type: String,

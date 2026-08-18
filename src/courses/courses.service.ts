@@ -151,6 +151,10 @@ export class CoursesService {
       queryBuilder.andWhere('course.category_id = :category_id', { category_id: options.category_id });
     }
 
+    if (options.type) {
+      queryBuilder.andWhere('course.type = :type', { type: options.type });
+    }
+
     if (options.course_level) {
       queryBuilder.andWhere('course.level = :course_level', { course_level: options.course_level });
     }

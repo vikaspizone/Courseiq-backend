@@ -4,64 +4,135 @@ import { ApiProperty } from '@nestjs/swagger';
 import { trans } from '../../utils/trans';
 import { CourseType, CourseLevel, CourseStatus, DiscountType } from '../../utils/enums';
 
-export function transformJsonArray(value: any, cls: any) {
-  if (value === undefined || value === null) {
-    return value;
-  }
-  let parsedValue = value;
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (trimmed === '') {
-      return [];
-    }
-    try {
-      parsedValue = JSON.parse(trimmed);
-      if (typeof parsedValue === 'string') {
-        parsedValue = JSON.parse(parsedValue.trim());
-      }
-    } catch {
-      if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
-        try {
-          const formatted = trimmed.replace(/'/g, '"');
-          parsedValue = JSON.parse(formatted);
-        } catch {
-          return value;
-        }
-      } else {
-        return value;
+export function transformJsonArray(value: any, cls: any, obj?: any, key?: string) {
+  if (value !== undefined && value !== null && value !== '') {
+    let parsedValue = value;
+    if (typeof value === 'string') {
+      try {
+        parsedValue = JSON.parse(value);
+      } catch {
+        // Not a JSON string, fallback to reconstruction or return value
       }
     }
-  }
-
-  if (parsedValue === null || parsedValue === undefined) {
-    return [];
-  }
-
-  if (Array.isArray(parsedValue)) {
-    const parsedItems = parsedValue.map((item) => {
-      if (typeof item === 'string') {
-        const trimmedItem = item.trim();
-        try {
-          return JSON.parse(trimmedItem);
-        } catch {
-          if (trimmedItem.startsWith('{') && trimmedItem.endsWith('}')) {
-            try {
-              return JSON.parse(trimmedItem.replace(/'/g, '"'));
-            } catch {
-              return item;
-            }
+    if (Array.isArray(parsedValue)) {
+      const parsedItems = parsedValue.map((item) => {
+        if (typeof item === 'string') {
+          try {
+            return JSON.parse(item);
+          } catch {
+            return item;
           }
+        }
+        return item;
+      });
+      return plainToInstance(cls, parsedItems);
+    }
+    if (typeof parsedValue === 'object') {
+      return plainToInstance(cls, [parsedValue]);
+    }
+  }
+
+  if (obj && key) {
+    const list: any[] = [];
+    const keys = Object.keys(obj);
+    const regex1 = new RegExp(`^${key}\\[(\\d+)\\]\\[(\\w+)\\]$`);
+    const regex2 = new RegExp(`^${key}\\[(\\d+)\\]\\.(\\w+)$`);
+    const regex3 = new RegExp(`^${key}\\[(\\d+)\\]$`);
+
+    for (const k of keys) {
+      let match = k.match(regex1);
+      if (match) {
+        const idx = parseInt(match[1], 10);
+        const prop = match[2];
+        if (!list[idx]) list[idx] = {};
+        list[idx][prop] = obj[k];
+        continue;
+      }
+
+      match = k.match(regex2);
+      if (match) {
+        const idx = parseInt(match[1], 10);
+        const prop = match[2];
+        if (!list[idx]) list[idx] = {};
+        list[idx][prop] = obj[k];
+        continue;
+      }
+
+      match = k.match(regex3);
+      if (match) {
+        const idx = parseInt(match[1], 10);
+        list[idx] = obj[k];
+        continue;
+      }
+    }
+
+    const cleanedList = list.filter(item => item !== undefined).map(item => {
+      if (typeof item === 'string') {
+        try {
+          return JSON.parse(item);
+        } catch {
           return item;
         }
       }
       return item;
     });
-    return plainToInstance(cls, parsedItems);
+
+    if (cleanedList.length > 0) {
+      return plainToInstance(cls, cleanedList);
+    }
   }
-  if (typeof parsedValue === 'object') {
-    return plainToInstance(cls, [parsedValue]);
+
+  return value;
+}
+
+export function transformJsonObject(value: any, cls: any, obj?: any, key?: string) {
+  if (value !== undefined && value !== null && value !== '') {
+    if (typeof value === 'string') {
+      try {
+        return plainToInstance(cls, JSON.parse(value));
+      } catch {
+        return value;
+      }
+    }
+    return plainToInstance(cls, value);
   }
-  return parsedValue;
+
+  if (obj && key) {
+    const keys = Object.keys(obj);
+    const regex1 = new RegExp(`^${key}\\[(\\w+)\\]$`);
+    const regex2 = new RegExp(`^${key}\\.(\\w+)$`);
+    const result: any = {};
+    let found = false;
+
+    for (const k of keys) {
+      let match = k.match(regex1);
+      if (match) {
+        const prop = match[1];
+        result[prop] = obj[k];
+        found = true;
+        continue;
+      }
+
+      match = k.match(regex2);
+      if (match) {
+        const prop = match[1];
+        result[prop] = obj[k];
+        found = true;
+        continue;
+      }
+    }
+
+    if (found) {
+      for (const prop of Object.keys(result)) {
+        if (typeof result[prop] === 'string' && result[prop] !== '' && !isNaN(Number(result[prop]))) {
+          result[prop] = Number(result[prop]);
+        }
+      }
+      return plainToInstance(cls, result);
+    }
+  }
+
+  return value;
 }
 
 export function transformJson(value: any) {
@@ -215,7 +286,7 @@ export class CreateCourseDto {
     description: 'Course translations list',
     type: [CourseTranslationInputDto],
   })
-  @Transform(({ value }) => transformJsonArray(value, CourseTranslationInputDto))
+  @Transform(({ value, obj, key }) => transformJsonArray(value, CourseTranslationInputDto, obj, key))
   @IsArray({ message: 'Translations must be an array' })
   @ValidateNested({ each: true })
   @Type(() => CourseTranslationInputDto)
@@ -226,17 +297,7 @@ export class CreateCourseDto {
     type: CoursePriceInputDto,
     required: false,
   })
-  @Transform(({ value }) => {
-    if (value === undefined || value === null) return value;
-    if (typeof value === 'string') {
-      try {
-        return plainToInstance(CoursePriceInputDto, JSON.parse(value));
-      } catch {
-        return value;
-      }
-    }
-    return plainToInstance(CoursePriceInputDto, value);
-  })
+  @Transform(({ value, obj, key }) => transformJsonObject(value, CoursePriceInputDto, obj, key))
   @IsOptional()
   @ValidateNested()
   @Type(() => CoursePriceInputDto)
