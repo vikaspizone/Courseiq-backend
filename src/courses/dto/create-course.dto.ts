@@ -10,18 +10,47 @@ export function transformJsonArray(value: any, cls: any) {
   }
   let parsedValue = value;
   if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed === '') {
+      return [];
+    }
     try {
-      parsedValue = JSON.parse(value);
+      parsedValue = JSON.parse(trimmed);
+      if (typeof parsedValue === 'string') {
+        parsedValue = JSON.parse(parsedValue.trim());
+      }
     } catch {
-      return value;
+      if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+        try {
+          const formatted = trimmed.replace(/'/g, '"');
+          parsedValue = JSON.parse(formatted);
+        } catch {
+          return value;
+        }
+      } else {
+        return value;
+      }
     }
   }
+
+  if (parsedValue === null || parsedValue === undefined) {
+    return [];
+  }
+
   if (Array.isArray(parsedValue)) {
     const parsedItems = parsedValue.map((item) => {
       if (typeof item === 'string') {
+        const trimmedItem = item.trim();
         try {
-          return JSON.parse(item);
+          return JSON.parse(trimmedItem);
         } catch {
+          if (trimmedItem.startsWith('{') && trimmedItem.endsWith('}')) {
+            try {
+              return JSON.parse(trimmedItem.replace(/'/g, '"'));
+            } catch {
+              return item;
+            }
+          }
           return item;
         }
       }
