@@ -2,7 +2,7 @@ import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { trans } from '../../utils/trans';
-import { CourseTranslationInputDto, CoursePriceInputDto, transformJson, transformJsonArray } from './create-course.dto';
+import { CourseTranslationInputDto, CoursePriceInputDto, transformJson, transformJsonArray, transformJsonObject } from './create-course.dto';
 import { CourseType, CourseLevel, CourseStatus } from '../../utils/enums';
 
 export class UpdateCourseDto {
@@ -89,9 +89,9 @@ export class UpdateCourseDto {
     type: [CourseTranslationInputDto],
     required: false,
   })
-  @Transform(({ value }) => {
+  @Transform(({ value, obj, key }) => {
     if (value === '') return undefined;
-    return transformJsonArray(value, CourseTranslationInputDto);
+    return transformJsonArray(value, CourseTranslationInputDto, obj, key);
   })
   @IsArray({ message: 'Translations must be an array' })
   @IsOptional()
@@ -104,16 +104,9 @@ export class UpdateCourseDto {
     type: CoursePriceInputDto,
     required: false,
   })
-  @Transform(({ value }) => {
-    if (value === '' || value === undefined || value === null) return undefined;
-    if (typeof value === 'string') {
-      try {
-        return plainToInstance(CoursePriceInputDto, JSON.parse(value));
-      } catch {
-        return value;
-      }
-    }
-    return plainToInstance(CoursePriceInputDto, value);
+  @Transform(({ value, obj, key }) => {
+    if (value === '') return undefined;
+    return transformJsonObject(value, CoursePriceInputDto, obj, key);
   })
   @IsOptional()
   @ValidateNested()

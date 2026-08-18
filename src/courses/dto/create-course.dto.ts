@@ -8,8 +8,12 @@ export function transformJsonArray(value: any, cls: any, obj?: any, key?: string
   if (value !== undefined && value !== null && value !== '') {
     let parsedValue = value;
     if (typeof value === 'string') {
+      let trimmed = value.trim();
+      if (trimmed.startsWith('{') && trimmed.endsWith('}') && !trimmed.startsWith('[{')) {
+        trimmed = `[${trimmed}]`;
+      }
       try {
-        parsedValue = JSON.parse(value);
+        parsedValue = JSON.parse(trimmed);
       } catch {
         // Not a JSON string, fallback to reconstruction or return value
       }
