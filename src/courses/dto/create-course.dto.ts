@@ -1,8 +1,8 @@
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn, IsBoolean, IsEnum, IsNumber, Min } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn, IsBoolean, IsEnum, IsNumber, Min, ValidateIf } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { trans } from '../../utils/trans';
-import { CourseType, CourseLevel, CourseStatus, DiscountType } from '../../utils/enums';
+import { CourseType, CourseLevel, CourseStatus, DiscountType, CourseMediaType } from '../../utils/enums';
 
 export function transformJsonArray(value: any, cls: any, obj?: any, key?: string) {
   if (value !== undefined && value !== null && value !== '') {
@@ -207,11 +207,11 @@ export class CourseTranslationInputDto {
 
   @ApiProperty({
     description: 'Course description translation',
-    required: false,
+    required: true,
   })
   @IsString()
-  @IsOptional()
-  description?: string;
+  @IsNotEmpty({ message: 'Description translation is required' })
+  description!: string;
 
   @ApiProperty({
     description: 'Course overview translation',
@@ -220,6 +220,40 @@ export class CourseTranslationInputDto {
   @IsString()
   @IsOptional()
   overview?: string;
+}
+
+export class MediaMetadataInputDto {
+  @ApiProperty({ description: 'Whether this media is the course thumbnail', example: false })
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  @IsNotEmpty()
+  is_thumbnail!: boolean;
+
+  @ApiProperty({ description: 'Whether this media is an external URL', example: false })
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  @IsNotEmpty()
+  is_url!: boolean;
+
+  @ApiProperty({ description: 'External URL for this media item (Required if is_url is true)', required: false })
+  @ValidateIf(o => o.is_url === true || (o.is_url as any) === 'true')
+  @IsNotEmpty({ message: 'file_url is required when is_url is true' })
+  @IsString()
+  file_url?: string;
+
+  @ApiProperty({ description: 'Media item type (image, video, or document)', enum: CourseMediaType })
+  @IsEnum(CourseMediaType, { message: 'type must be a valid CourseMediaType (image, video, or document)' })
+  @IsNotEmpty()
+  type!: CourseMediaType;
+
+  @ApiProperty({ description: 'Display sorting order', example: 1 })
+  @Transform(({ value }) => {
+    if (value === '' || value === null || value === undefined) return undefined;
+    return Number(value);
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  sort_order!: number;
 }
 
 export class CreateCourseDto {
@@ -252,21 +286,36 @@ export class CreateCourseDto {
   slug!: string;
 
   @ApiProperty({
-    description: 'Course thumbnail file to upload',
-    type: 'string',
-    format: 'binary',
+    description: 'Media metadata array describing each file or URL in the media uploads',
+    type: [MediaMetadataInputDto],
+    required: false,
+  })
+  @Transform(({ value, obj, key }) => transformJsonArray(value, MediaMetadataInputDto, obj, key))
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => MediaMetadataInputDto)
+  media?: MediaMetadataInputDto[];
+
+  @ApiProperty({
+    description: 'Course media files to upload (images, videos, or documents)',
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
     required: false,
   })
   @IsOptional()
-  thumbnail?: any;
+  mediaFiles?: any[];
 
   @ApiProperty({
     description: 'Course primary language name',
-    required: false,
+    required: true,
   })
   @IsString()
-  @IsOptional()
-  language?: string;
+  @IsNotEmpty({ message: 'Language is required' })
+  language!: string;
 
   @ApiProperty({
     description: 'List of topics or tags associated with the course',
@@ -280,11 +329,11 @@ export class CreateCourseDto {
     description: 'Course status',
     example: 'draft',
     enum: CourseStatus,
-    required: false,
+    required: true,
   })
   @IsEnum(CourseStatus, { message: () => trans('course.status_invalid') })
-  @IsOptional()
-  status?: CourseStatus;
+  @IsNotEmpty({ message: 'Status is required' })
+  status!: CourseStatus;
 
   @ApiProperty({
     description: 'Course translations list',
@@ -297,12 +346,13 @@ export class CreateCourseDto {
   translations!: CourseTranslationInputDto[];
 
   @ApiProperty({
-    description: 'Course price detail',
+    description: 'Course price detail (Required if type is paid)',
     type: CoursePriceInputDto,
     required: false,
   })
   @Transform(({ value, obj, key }) => transformJsonObject(value, CoursePriceInputDto, obj, key))
-  @IsOptional()
+  @ValidateIf(o => o.type === CourseType.PAID || o.type === 'paid')
+  @IsNotEmpty({ message: 'Price detail is required when course type is paid' })
   @ValidateNested()
   @Type(() => CoursePriceInputDto)
   price?: CoursePriceInputDto;

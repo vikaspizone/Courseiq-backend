@@ -10,12 +10,14 @@ import { CourseMediaType } from '../utils/enums';
 export interface CreateMediaPayload {
   course_id: string;
   type: CourseMediaType;
-  file_name: string;
-  file_path: string;
+  file_name?: string | null;
+  file_path?: string | null;
   file_url: string;
-  mime_type: string;
-  file_size: string;
+  mime_type?: string | null;
+  file_size?: string | null;
   is_active?: boolean;
+  is_thumbnail?: boolean;
+  is_url?: boolean;
 }
 
 @Injectable()
@@ -34,6 +36,14 @@ export class CourseMediaService {
     const courseExists = await this.courseRepository.findOne({ where: { id: dto.course_id } });
     if (!courseExists) {
       throw new NotFoundException(trans('course.not_found'));
+    }
+
+    // If this media is marked as thumbnail, reset all other thumbnails for this course
+    if (dto.is_thumbnail === true) {
+      await this.courseMediaRepository.update(
+        { course_id: dto.course_id, is_thumbnail: true },
+        { is_thumbnail: false },
+      );
     }
 
     // Find the current max sort order for this course_id and type
@@ -62,11 +72,20 @@ export class CourseMediaService {
     }
 
     // If course_id is provided, verify that the new course exists
+    const targetCourseId = dto.course_id || media.course_id;
     if (dto.course_id && dto.course_id !== media.course_id) {
       const courseExists = await this.courseRepository.findOne({ where: { id: dto.course_id } });
       if (!courseExists) {
         throw new NotFoundException(trans('course.not_found') || 'Course not found');
       }
+    }
+
+    // If this media is marked as thumbnail, reset all other thumbnails for this course
+    if (dto.is_thumbnail === true) {
+      await this.courseMediaRepository.update(
+        { course_id: targetCourseId, is_thumbnail: true },
+        { is_thumbnail: false },
+      );
     }
 
     Object.assign(media, {
@@ -210,7 +229,6 @@ export class CourseMediaService {
         type: course.type,
         level: course.level,
         slug: course.slug,
-        thumbnail: course.thumbnail,
         language: course.language,
         topics: course.topics,
         status: course.status,

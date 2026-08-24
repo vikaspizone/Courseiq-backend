@@ -8,9 +8,10 @@ import { CourseCategory } from '../databaseSchema/course-category.schema';
 import { Language } from '../databaseSchema/language.schema';
 import { CoursePrice } from '../databaseSchema/course-price.schema';
 import { CourseInstructor } from '../databaseSchema/course-instructor.schema';
+import { CourseMedia } from '../databaseSchema/course-media.schema';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course, CourseTranslation, CourseCategory, Language, CoursePrice, CourseInstructor])],
+  imports: [TypeOrmModule.forFeature([Course, CourseTranslation, CourseCategory, Language, CoursePrice, CourseInstructor, CourseMedia])],
   controllers: [CoursesController],
   providers: [CoursesService],
   exports: [CoursesService],

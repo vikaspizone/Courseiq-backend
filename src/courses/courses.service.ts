@@ -7,6 +7,7 @@ import { CourseCategory } from '../databaseSchema/course-category.schema';
 import { Language } from '../databaseSchema/language.schema';
 import { CoursePrice } from '../databaseSchema/course-price.schema';
 import { CourseInstructor } from '../databaseSchema/course-instructor.schema';
+import { CourseMedia } from '../databaseSchema/course-media.schema';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CourseFilterDto } from './dto/course-filter.dto';
@@ -29,6 +30,8 @@ export class CoursesService {
     private readonly priceRepository: Repository<CoursePrice>,
     @InjectRepository(CourseInstructor)
     private readonly courseInstructorRepository: Repository<CourseInstructor>,
+    @InjectRepository(CourseMedia)
+    private readonly courseMediaRepository: Repository<CourseMedia>,
   ) {}
 
   // Create a new course with translations
@@ -48,12 +51,13 @@ export class CoursesService {
       throw new ConflictException(trans('course.slug_exists'));
     }
 
+    const processedMedia = (createDto as any).processedMedia || [];
+
     const course = this.courseRepository.create({
       category_id: createDto.category_id,
       type: createDto.type,
       level: createDto.level,
       slug: createDto.slug,
-      thumbnail: createDto.thumbnail || null,
       language: createDto.language || null,
       topics: createDto.topics || null,
       status: createDto.status || CourseStatus.DRAFT,
@@ -113,6 +117,27 @@ export class CoursesService {
       savedCourse.prices = [await this.priceRepository.save(priceRecord)];
     } else {
       savedCourse.prices = [];
+    }
+
+    // Save multiple media in CourseMedia table
+    if (processedMedia && processedMedia.length > 0) {
+      for (const mediaItem of processedMedia) {
+        const itemMedia = this.courseMediaRepository.create({
+          course_id: savedCourse.id,
+          type: mediaItem.type,
+          file_name: mediaItem.file_name || null,
+          file_path: mediaItem.file_path || null,
+          file_url: mediaItem.file_url,
+          mime_type: mediaItem.mime_type || null,
+          file_size: mediaItem.file_size || null,
+          is_active: true,
+          is_thumbnail: mediaItem.is_thumbnail,
+          is_url: mediaItem.is_url,
+          sort_order: mediaItem.sort_order,
+          created_by: userId,
+        });
+        await this.courseMediaRepository.save(itemMedia);
+      }
     }
 
     const reloaded = await this.findOneLocalized(savedCourse.id);
@@ -258,7 +283,6 @@ export class CoursesService {
         type: course.type,
         level: course.level,
         slug: course.slug,
-        thumbnail: course.thumbnail,
         media: course.media || [],
         language: course.language,
         topics: course.topics,
@@ -377,7 +401,6 @@ export class CoursesService {
       type: course.type,
       level: course.level,
       slug: course.slug,
-      thumbnail: course.thumbnail,
       media: course.media || [],
       language: course.language,
       topics: course.topics,
@@ -434,7 +457,9 @@ export class CoursesService {
     // Update core fields
     if (updateDto.type !== undefined) course.type = updateDto.type;
     if (updateDto.level !== undefined) course.level = updateDto.level;
-    if (updateDto.thumbnail !== undefined) course.thumbnail = updateDto.thumbnail;
+    
+    const processedMedia = (updateDto as any).processedMedia;
+
     if (updateDto.language !== undefined) course.language = updateDto.language;
     if (updateDto.topics !== undefined) course.topics = updateDto.topics;
     if (updateDto.status !== undefined) course.status = updateDto.status;
@@ -508,6 +533,35 @@ export class CoursesService {
           updated_by: userId,
         });
         await this.priceRepository.save(newPrice);
+      }
+    }
+
+    // Save multiple media in CourseMedia table
+    if (processedMedia && processedMedia.length > 0) {
+      const hasNewThumbnail = processedMedia.some(item => item.is_thumbnail === true || (item.is_thumbnail as any) === 'true');
+      if (hasNewThumbnail) {
+        await this.courseMediaRepository.update(
+          { course_id: id, is_thumbnail: true },
+          { is_thumbnail: false },
+        );
+      }
+
+      for (const mediaItem of processedMedia) {
+        const itemMedia = this.courseMediaRepository.create({
+          course_id: id,
+          type: mediaItem.type,
+          file_name: mediaItem.file_name || null,
+          file_path: mediaItem.file_path || null,
+          file_url: mediaItem.file_url,
+          mime_type: mediaItem.mime_type || null,
+          file_size: mediaItem.file_size || null,
+          is_active: true,
+          is_thumbnail: mediaItem.is_thumbnail,
+          is_url: mediaItem.is_url,
+          sort_order: mediaItem.sort_order,
+          created_by: userId,
+        });
+        await this.courseMediaRepository.save(itemMedia);
       }
     }
 

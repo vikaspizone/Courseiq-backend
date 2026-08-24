@@ -159,7 +159,6 @@ export class CourseRatingsService {
           type: course.type,
           level: course.level,
           slug: course.slug,
-          thumbnail: course.thumbnail,
           title: courseTranslation ? courseTranslation.title : '',
           description: courseTranslation ? courseTranslation.description : '',
         };
@@ -251,7 +250,6 @@ export class CourseRatingsService {
           type: course.type,
           level: course.level,
           slug: course.slug,
-          thumbnail: course.thumbnail,
           title: courseTranslation ? courseTranslation.title : '',
           description: courseTranslation ? courseTranslation.description : '',
         };

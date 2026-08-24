@@ -43,17 +43,24 @@ async function bootstrap() {
       transform: true,
       stopAtFirstError: true,
       exceptionFactory: (errors) => {
-        const firstError = errors[0];
-        if (firstError && firstError.constraints) {
-          const constraintsMessages = Object.values(firstError.constraints);
-          // Return the first constraint failure message as a string
-          return new BadRequestException({
-            statusCode: 400,
-            error: 'Bad Request',
-            message: constraintsMessages[0],
-          });
-        }
-        return new BadRequestException('Validation failed');
+        const getFirstErrorMessage = (errorList: any[]): string => {
+          for (const err of errorList) {
+            if (err.constraints) {
+              return Object.values(err.constraints)[0] as string;
+            }
+            if (err.children && err.children.length > 0) {
+              const msg = getFirstErrorMessage(err.children);
+              if (msg) return msg;
+            }
+          }
+          return 'Validation failed';
+        };
+        const errorMessage = getFirstErrorMessage(errors);
+        return new BadRequestException({
+          statusCode: 400,
+          error: 'Bad Request',
+          message: errorMessage,
+        });
       },
     }),
   );

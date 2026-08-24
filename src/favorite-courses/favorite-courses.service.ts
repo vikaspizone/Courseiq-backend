@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FavoriteCourse } from '../databaseSchema/favorite-course.schema';
 import { Course } from '../databaseSchema/course.schema';
+import { FavoriteCourseFilterDto } from './dto/favorite-course-filter.dto';
 import { trans, localeStorage } from '../utils/trans';
 
 @Injectable()
@@ -53,12 +54,15 @@ export class FavoriteCoursesService {
     };
   }
 
-  async getFavorites(options: { page?: number; limit?: number }, userId: string, userRole: string): Promise<any> {
+  async getFavorites(options: FavoriteCourseFilterDto, userId: string, userRole: string): Promise<any> {
     const page = Math.max(1, Number(options.page || 1));
     const limit = Math.max(1, Number(options.limit || 10));
     const skip = (page - 1) * limit;
 
-    const whereClause = userRole === 'admin' ? {} : { user_id: userId };
+    const whereClause: any = userRole === 'admin' ? {} : { user_id: userId };
+    if (options.course_id) {
+      whereClause.course_id = options.course_id;
+    }
 
     const [items, totalItems] = await this.favoriteCourseRepository.findAndCount({
       where: whereClause,
@@ -98,7 +102,6 @@ export class FavoriteCoursesService {
         type: course.type,
         level: course.level,
         slug: course.slug,
-        thumbnail: course.thumbnail,
         media: course.media || [],
         language: course.language,
         topics: course.topics,

@@ -1,8 +1,8 @@
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn, IsBoolean, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, ValidateNested, IsIn, IsBoolean, IsEnum, ValidateIf } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { trans } from '../../utils/trans';
-import { CourseTranslationInputDto, CoursePriceInputDto, transformJson, transformJsonArray, transformJsonObject } from './create-course.dto';
+import { CourseTranslationInputDto, CoursePriceInputDto, transformJson, transformJsonArray, transformJsonObject, MediaMetadataInputDto } from './create-course.dto';
 import { CourseType, CourseLevel, CourseStatus } from '../../utils/enums';
 
 export class UpdateCourseDto {
@@ -45,14 +45,31 @@ export class UpdateCourseDto {
   slug?: string;
 
   @ApiProperty({
-    description: 'Course thumbnail file to upload',
-    type: 'string',
-    format: 'binary',
+    description: 'Media metadata array describing each file or URL in the media uploads',
+    type: [MediaMetadataInputDto],
     required: false,
   })
-  @Transform(({ value }) => value === '' ? undefined : value)
+  @Transform(({ value, obj, key }) => {
+    if (value === '') return undefined;
+    return transformJsonArray(value, MediaMetadataInputDto, obj, key);
+  })
+  @IsArray()
   @IsOptional()
-  thumbnail?: any;
+  @ValidateNested({ each: true })
+  @Type(() => MediaMetadataInputDto)
+  media?: MediaMetadataInputDto[];
+
+  @ApiProperty({
+    description: 'Course media files to upload (images, videos, or documents)',
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
+    required: false,
+  })
+  @IsOptional()
+  mediaFiles?: any[];
 
   @ApiProperty({
     description: 'Course primary language name',
@@ -100,7 +117,7 @@ export class UpdateCourseDto {
   translations?: CourseTranslationInputDto[];
 
   @ApiProperty({
-    description: 'Course price detail',
+    description: 'Course price detail (Required if type is paid)',
     type: CoursePriceInputDto,
     required: false,
   })
@@ -108,7 +125,8 @@ export class UpdateCourseDto {
     if (value === '') return undefined;
     return transformJsonObject(value, CoursePriceInputDto, obj, key);
   })
-  @IsOptional()
+  @ValidateIf(o => o.type === CourseType.PAID || o.type === 'paid')
+  @IsNotEmpty({ message: 'Price detail is required when course type is paid' })
   @ValidateNested()
   @Type(() => CoursePriceInputDto)
   price?: CoursePriceInputDto;

@@ -36,26 +36,44 @@ export class CourseMediaController {
     @UploadedFile() file: Express.Multer.File,
     @Request() req,
   ) {
-    if (!file) {
-      throw new BadRequestException(trans('media.file_required'));
-    }
-
     const userId = req.user.id;
+    let createDto: any;
 
-    const destIndex = file.destination.replace(/\\/g, '/').indexOf('uploads/');
-    const relativePath = destIndex !== -1 ? file.destination.replace(/\\/g, '/').substring(destIndex) + '/' + file.filename : `uploads/files/${file.filename}`;
-    const fileUrl = '/' + relativePath;
+    if (file) {
+      const destIndex = file.destination.replace(/\\/g, '/').indexOf('uploads/');
+      const relativePath = destIndex !== -1 ? file.destination.replace(/\\/g, '/').substring(destIndex) + '/' + file.filename : `uploads/files/${file.filename}`;
+      const fileUrl = '/' + relativePath;
 
-    const createDto = {
-      course_id: dto.course_id,
-      type: dto.type,
-      file_name: file.originalname,
-      file_path: relativePath,
-      file_url: fileUrl,
-      mime_type: file.mimetype,
-      file_size: file.size.toString(),
-      is_active: dto.is_active,
-    };
+      createDto = {
+        course_id: dto.course_id,
+        type: dto.type,
+        file_name: file.originalname,
+        file_path: relativePath,
+        file_url: fileUrl,
+        mime_type: file.mimetype,
+        file_size: file.size.toString(),
+        is_active: dto.is_active,
+        is_thumbnail: dto.is_thumbnail || false,
+        is_url: false,
+      };
+    } else {
+      if (!dto.file_url) {
+        throw new BadRequestException(trans('media.file_required') || 'Either a file upload or a file_url is required.');
+      }
+
+      createDto = {
+        course_id: dto.course_id,
+        type: dto.type,
+        file_name: null,
+        file_path: null,
+        file_url: dto.file_url,
+        mime_type: null,
+        file_size: null,
+        is_active: dto.is_active,
+        is_thumbnail: dto.is_thumbnail || false,
+        is_url: true,
+      };
+    }
 
     const [result, error] = await handlePromise(this.courseMediaService.add(createDto, userId));
     if (error) throw error;

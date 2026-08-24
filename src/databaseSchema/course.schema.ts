@@ -29,8 +29,6 @@ export class Course {
   @Column({ unique: true })
   slug!: string;
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  thumbnail!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   language!: string | null;

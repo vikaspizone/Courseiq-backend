@@ -20,11 +20,29 @@ export class UploadCourseMediaDto {
   @IsOptional()
   is_active?: boolean;
 
+  @ApiProperty({ description: 'Whether this media is the course thumbnail', example: false, required: false })
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  @IsOptional()
+  is_thumbnail?: boolean;
+
+  @ApiProperty({ description: 'Whether this media is an external URL', example: false, required: false })
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  @IsOptional()
+  is_url?: boolean;
+
+  @ApiProperty({ description: 'External URL of the media', example: 'https://example.com/image.jpg', required: false })
+  @IsString()
+  @IsOptional()
+  file_url?: string;
+
   @ApiProperty({
     description: 'Binary media file to upload',
     type: 'string',
     format: 'binary',
+    required: false,
   })
   @IsOptional()
-  file!: any;
+  file?: any;
 }
