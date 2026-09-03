@@ -164,6 +164,29 @@ export default {
     not_found: 'खरीद लेनदेन नहीं मिला।',
     price_not_found: 'कोर्स मूल्य आईडी नहीं मिली।',
   },
+  section: {
+    not_found: 'कोर्स सेक्शन नहीं मिला।',
+    created: 'कोर्स सेक्शन सफलतापूर्वक बनाया गया।',
+    updated: 'कोर्स सेक्शन सफलतापूर्वक अपडेट किया गया।',
+    deleted: 'कोर्स सेक्शन सफलतापूर्वक हटा दिया गया।',
+    lang_not_found: 'भाषा कोड :code डेटाबेस में पंजीकृत नहीं है।',
+    translations_required: 'अनुवाद आवश्यक हैं।',
+    title_required: 'अनुवाद के लिए शीर्षक आवश्यक है।',
+    lang_code_required: 'अनुवाद के लिए भाषा कोड आवश्यक है।',
+  },
+  lesson: {
+    not_found: 'पाठ (lesson) नहीं मिला।',
+    created: 'पाठ सफलतापूर्वक बनाया गया।',
+    updated: 'पाठ सफलतापूर्वक अपडेट किया गया।',
+    deleted: 'पाठ सफलतापूर्वक हटा दिया गया।',
+    lang_not_found: 'भाषा कोड :code डेटाबेस में पंजीकृत नहीं है।',
+    translations_required: 'अनुवाद आवश्यक हैं।',
+    title_required: 'अनुवाद के लिए शीर्षक आवश्यक है।',
+    lang_code_required: 'अनुवाद के लिए भाषा कोड आवश्यक है।',
+    duration_invalid: 'अवधि (duration) सेकंड को दर्शाने वाला एक सकारात्मक पूर्णांक होना चाहिए।',
+    type_invalid: 'पाठ का प्रकार video, text, document, या quiz होना चाहिए।',
+  },
 };
+
 
 

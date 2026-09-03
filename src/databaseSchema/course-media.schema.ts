@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Course } from './course.schema';
+import { Lesson } from './lesson.schema';
 import { User } from './user.schema';
 import { CourseMediaType } from '../utils/enums';
 
@@ -14,6 +15,13 @@ export class CourseMedia {
   @ManyToOne(() => Course, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'course_id' })
   course!: Course;
+
+  @Column({ name: 'lesson_id', type: 'uuid', nullable: true })
+  lesson_id!: string | null;
+
+  @ManyToOne(() => Lesson, (lesson) => lesson.media, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'lesson_id' })
+  lesson!: Lesson | null;
 
   @Column({ type: 'enum', enum: CourseMediaType })
   type!: CourseMediaType;
@@ -33,8 +41,12 @@ export class CourseMedia {
   @Column({ name: 'file_size', type: 'bigint', nullable: true })
   file_size!: string | null;
 
+  @Column({ name: 'duration', type: 'int', nullable: true })
+  duration!: number | null;
+
   @Column({ name: 'sort_order', type: 'int', default: 0 })
   sort_order!: number;
+
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   is_active!: boolean;

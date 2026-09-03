@@ -54,5 +54,13 @@ export enum PaymentMethod {
   OTHER = 'other',
 }
 
+export enum LessonType {
+  VIDEO = 'video',
+  TEXT = 'text',
+  DOCUMENT = 'document',
+  QUIZ = 'quiz',
+}
+
+
 
 

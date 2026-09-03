@@ -164,6 +164,29 @@ export default {
     not_found: 'Purchase transaction not found.',
     price_not_found: 'Course price ID not found.',
   },
+  section: {
+    not_found: 'Course section not found.',
+    created: 'Course section created successfully.',
+    updated: 'Course section updated successfully.',
+    deleted: 'Course section deleted successfully.',
+    lang_not_found: 'Language code :code is not registered in the database.',
+    translations_required: 'Translations are required.',
+    title_required: 'Title is required for translation.',
+    lang_code_required: 'Language code is required for translation.',
+  },
+  lesson: {
+    not_found: 'Lesson not found.',
+    created: 'Lesson created successfully.',
+    updated: 'Lesson updated successfully.',
+    deleted: 'Lesson deleted successfully.',
+    lang_not_found: 'Language code :code is not registered in the database.',
+    translations_required: 'Translations are required.',
+    title_required: 'Title is required for translation.',
+    lang_code_required: 'Language code is required for translation.',
+    duration_invalid: 'Duration must be a positive integer representing seconds.',
+    type_invalid: 'Lesson type must be video, text, document, or quiz.',
+  },
 };
+
 
 
