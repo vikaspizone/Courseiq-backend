@@ -2,8 +2,9 @@ import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import * as path from 'path';
 
-const env = process.env.NODE_ENV;
+const env = process.env.NODE_ENV || 'development';
 config({ path: path.resolve(process.cwd(), `.env.${env}`) });
+config({ path: path.resolve(process.cwd(), '.env') });
 
 export default new DataSource({
   type: 'postgres',
